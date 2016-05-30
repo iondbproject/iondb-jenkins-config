@@ -14,4 +14,4 @@ os.system('make all')
 os.chdir('bin')
 
 for toexecute in os.listdir('.'):
-        os.system(toexecute)
+        os.system("./" + toexecute)
