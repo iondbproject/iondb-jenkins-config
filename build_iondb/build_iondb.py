@@ -11,7 +11,3 @@ os.system('mkdir build')
 os.chdir('build')
 os.system('cmake ..')
 os.system('make all')
-os.chdir('bin')
-
-for toexecute in os.listdir('.'):
-        os.system("./" + toexecute)
