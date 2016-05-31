@@ -57,8 +57,8 @@ def adaptPlanckFile(suitename, targetfile, destinationfile=None):
 
     for i,case in enumerate(testcases):
         caseattrs = {
-            "name": "Test #{}".format(i),
-            "classname": "PlanckTestCase",
+            "name": "{testname} test #{}".format(testname=suitename, i),
+            "classname": suitename,
             "time": "0.0",
         }
 
