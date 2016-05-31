@@ -73,3 +73,6 @@ Thumbs.db
 
 # Debug files
 *.dSYM/
+
+#Python scrap
+__pycache__/
