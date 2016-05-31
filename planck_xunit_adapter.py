@@ -2,6 +2,8 @@
 import re
 import sys
 
+# Outputs PlanckUnit test results in JUnit XML spec.
+
 def writeXMLHeader():
     print('<?xml version="1.0" encoding="UTF-8"?>')
 
@@ -14,7 +16,7 @@ def writeXunitTag(tagname, attributes=None):
         print("{key}=\"{val}\" ".format(key=key, val=val), end="")
     print(">")
 
-def adaptPlanckFile(targetfile, destinationfile=None):
+def adaptPlanckFile(suitename, targetfile, destinationfile=None):
     oldstdout = sys.stdout
     if destinationfile is not None:
         sys.stdout = destinationfile
@@ -39,43 +41,41 @@ def adaptPlanckFile(targetfile, destinationfile=None):
 
     summary["total_failed"] = int(summary["total_tests"]) - int(summary["total_passed"])
 
-    suiteattrs = {
-        "name": "PlanckUnit Output",
-        "reports": 1,
-        "test-cases": len(testcases),
+    runattrs = {
+        "name": suitename,
+        "project": "IonDB",
         "tests": len(testcases),
-        "skip": 0,
-        "errors": summary["total_failed"],
-        "errors-detail": summary["total_failed"],
+        "started": len(testcases),
         "failures": summary["total_failed"],
-        "failures-detail": summary["total_failed"],
+        "errors": 0,
+        "ignored": 0,
     }
 
     writeXMLHeader()
-    writeXunitTag("test-suite", suiteattrs)
+    writeXunitTag("testrun", runattrs)
+    writeXunitTag("testsuite", {"name": suitename, "time": "0.0"})
 
     for i,case in enumerate(testcases):
         caseattrs = {
-            "tests": 1,
-            "errors": 0 if case["line"] == "-1" else 1,
-            "failures": 0 if case["line"] == "-1" else 1,
             "name": "Test #{}".format(i),
-            "label": "A unit test",
+            "classname": "PlanckTestCase",
+            "time": "0.0",
         }
 
-        writeXunitTag("test-case", caseattrs)
+        writeXunitTag("testcase", caseattrs)
 
         if case["line"] != "-1": #if fail
-            writeXunitTag("error")
+            writeXunitTag("failure")
             print("Failed in function '{func}', at {filen}:{line}: {msg}\n".format(func=case["function"],
                                                                                    filen=case["file"],
                                                                                    line=case["line"],
                                                                                    msg=case["message"]))
-            writeXunitTag("/error")
+            writeXunitTag("/failure")
 
-        writeXunitTag("/test-case")
+        writeXunitTag("/testcase")
 
-    writeXunitTag("/test-suite")
+    writeXunitTag("/testsuite")
+    writeXunitTag("/testrun")
 
     # Clean-up changes
     sys.stdout = oldstdout

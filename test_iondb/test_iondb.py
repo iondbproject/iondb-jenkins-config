@@ -29,6 +29,6 @@ for testexec in os.listdir(BIN_PATH):
 
     print("Adapting {pl} -> {xl}...".format(pl=planck_outputfname, xl=xunit_outputfname))
     with open(planck_outputfname, "r+") as planck_file, open(xunit_outputfname, "w+") as xunit_file:
-        pxa.adaptPlanckFile(planck_file, xunit_file)
+        pxa.adaptPlanckFile(testexec, planck_file, xunit_file)
 
 print("Test IonDB done.")
