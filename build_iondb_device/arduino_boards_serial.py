@@ -2,7 +2,6 @@ from cmake_build import CMakeBuild
 import boards as board_ids
 import serial.tools.list_ports
 import usb
-import shutil
 import colorama
 from colorama import Fore, Back, Style
 from collections import namedtuple
@@ -199,9 +198,10 @@ class ArduinoBoardsSerial:
 		else:
 			print('Trying port ' + port + ' for mcu ' + processor)
 
-		compile_result = CMakeBuild.do_build('test_sketch', board_type, port, True, processor, cs_pins_to_check)
-		upload_result = CMakeBuild.do_upload('test_sketch', 'test_sketch', True)
-		CMakeBuild.clean_build()
+		compile_result = CMakeBuild.do_build('../', 'test_sketch/build',
+											 board_type, port, True, processor, cs_pins_to_check)
+		upload_result = CMakeBuild.do_upload('test_sketch-upload', 'test_sketch/build', True)
+		CMakeBuild.clean_build('test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
 
@@ -218,7 +218,7 @@ class ArduinoBoardsSerial:
 
 	@staticmethod
 	def serial_detect_sd_compatibility(port):
-		ser = serial.Serial(port, 9600, timeout=10)
+		ser = serial.Serial(port, 9600, timeout=20)
 
 		linein = ser.readline().decode('ascii')
 		while linein != '':
