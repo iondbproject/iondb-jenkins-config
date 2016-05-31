@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import shutil
 
+try:
+    shutil.rmtree("iondb/")
+except FileNotFoundError:
+    print("iondb/ didn't exist. No remove.")
 os.system('git clone https://github.com/iondbproject/iondb.git --recursive')
 os.chdir('iondb')
 os.system('git checkout development')

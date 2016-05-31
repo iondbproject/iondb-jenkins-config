@@ -12,6 +12,10 @@ BIN_PATH = "../../build_iondb/iondb/build/bin/"
 
 print("Start IonDB Test Phase.")
 
+try:
+    shutil.rmtree("output/")
+except FileNotFoundError:
+    print("output/ didn't exist. No remove.")
 os.makedirs("output/", exist_ok=True)
 os.chdir("output/")
 
