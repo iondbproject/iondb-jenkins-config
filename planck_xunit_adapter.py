@@ -2,6 +2,9 @@
 import re
 import sys
 
+def writeXMLHeader():
+    print('<?xml version="1.0" encoding="UTF-8"?>')
+
 def writeXunitTag(tagname, attributes=None):
     if attributes is None:
         attributes = {}
@@ -48,6 +51,7 @@ def adaptPlanckFile(targetfile, destinationfile=None):
         "failures-detail": summary["total_failed"],
     }
 
+    writeXMLHeader()
     writeXunitTag("test-suite", suiteattrs)
 
     for i,case in enumerate(testcases):
