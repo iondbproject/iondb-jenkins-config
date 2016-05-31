@@ -35,24 +35,24 @@ class ArduinoBoardsSerial:
 				lines = file.readlines()
 		except IOError:
 			print('Failed to read Arduino boards from file')
-			return False
+			return []
 
 		arduino_boards = []
 		for line in lines:
 			tokens = [token.strip() for token in line.split(',')]
 
-			if tokens[1] == 'None':
-				tokens[1] = None
-
-			if tokens[3] == 'True':
-				tokens[3] = True
-			else:
-				tokens[3] = False
+			if tokens[2] == 'None':
+				tokens[2] = None
 
 			if tokens[4] == 'True':
 				tokens[4] = True
 			else:
 				tokens[4] = False
+
+			if tokens[5] == 'True':
+				tokens[5] = True
+			else:
+				tokens[5] = False
 
 			arduino_boards.append(ArduinoBoard(*tokens))
 
@@ -89,6 +89,8 @@ class ArduinoBoardsSerial:
 						if arduino_board.port is not None:
 							break
 
+		num_connected_boards = 0
+		connected_arduino_boards = []
 		for arduino_board in arduino_boards:
 			print('Attempting to match ' + (Fore.YELLOW + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
 			found_matching_device = False
@@ -108,6 +110,7 @@ class ArduinoBoardsSerial:
 				for test_processor in test_processors:
 					if arduino_board.port is None:
 						for connected_port in connected_ports:
+							# TODO: Only compile the first time and then use the fast upload
 							if ArduinoBoardsSerial.is_correct_device(test_board_type, test_processor, connected_port.device):
 								arduino_board.port = connected_port.device
 								connected_ports.remove(connected_port)
@@ -149,8 +152,12 @@ class ArduinoBoardsSerial:
 
 			if not found_matching_device:
 				print('Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
+			else:
+				arduino_board.id = num_connected_boards
+				connected_arduino_boards.append(arduino_board)
+				num_connected_boards += 1
 
-		return arduino_boards
+		return connected_arduino_boards
 
 	@staticmethod
 	def get_connected_device_types():
@@ -198,9 +205,8 @@ class ArduinoBoardsSerial:
 		else:
 			print('Trying port ' + port + ' for mcu ' + processor)
 
-		compile_result = CMakeBuild.do_build('../', 'test_sketch/build',
-											 board_type, port, True, processor, cs_pins_to_check)
-		upload_result = CMakeBuild.do_upload('test_sketch-upload', 'test_sketch/build', True)
+		compile_result = CMakeBuild.do_cmake_build('../', 'test_sketch/build', board_type, port, True, processor, cs_pins_to_check).status
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'test_sketch/build', False, True).status
 		CMakeBuild.clean_build('test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
@@ -237,8 +243,9 @@ class ArduinoBoardsSerial:
 
 
 class ArduinoBoard:
-	def __init__(self, board_type, processor=None, port=None, has_sd_card=False, has_formatted_sd_card=False):
+	def __init__(self, board_type, id=0, processor=None, port=None, has_sd_card=False, has_formatted_sd_card=False):
 		self.board_type = board_type
+		self.id = id
 		self.processor = processor
 		self.port = port
 		self.has_sd_card = has_sd_card
@@ -246,6 +253,7 @@ class ArduinoBoard:
 
 	def __str__(self):
 		temp_string = self.board_type
+		temp_string += ', ID: ' + str(self.id)
 
 		if self.processor is not None:
 			temp_string += ', ' + self.processor
@@ -263,6 +271,7 @@ class ArduinoBoard:
 
 	def __repr__(self):
 		temp_string = str(self.board_type)
+		temp_string += ', ' + str(self.id)
 		temp_string += ', ' + str(self.processor)
 		temp_string += ', ' + str(self.port)
 		temp_string += ', ' + str(self.has_sd_card)

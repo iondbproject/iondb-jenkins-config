@@ -4,42 +4,48 @@ import os
 import subprocess
 import re
 import sys
+import threading
 from collections import namedtuple
 import planck_serial
 
 sys.path.append('../build_iondb_device/')
 
 from cmake_build import CMakeBuild
+from arduino_boards_serial import ArduinoBoardsSerial
 
-dir_port_pair = namedtuple('dir_port_pair', ['directory', 'port'])
-
-
-def get_upload_targets(dir):
-	proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE)
-	output = proc.stdout.read()
-
-	targets = re.findall(r'^([^# \/\t\.%]*):[^=]?', output.decode('ascii'), flags=re.MULTILINE)
-	targets = [target.strip() for target in targets]
-	targets.remove('Makefile')
-	targets = [target for target in targets if "-upload" in target]
-
-	return targets
+arduino_build = namedtuple('arduino_build', ['directory', 'arduino', 'targets' 'is_free'])
 
 
-dir_port_pairs = []
+def upload_and_read_serial(target_name, arduino_build, output_dir):
+	arduino_build.is_free = False
+	CMakeBuild.execute_make_target(target_name, 'build/' + arduino_build.directory, True, True)
+	planck_serial.parse_serial(output_dir, arduino_build.arduino.port, print_info=True, clear_folder=True)
+	arduino_build.is_free = True
+
+
+# Note: We assume that the list of ArduinoBoards is already sorted by ID.
+arduino_boards = ArduinoBoardsSerial.load_arduino_boards('connected_arduino_boards.txt')
+arduino_builds = []
+
+# Match the Arduino boards to their corresponding builds and targets
 for entry in os.listdir('build/'):
 	if os.path.isdir('build/' + entry):
-		port = entry.split('_', 1)[1]
-		port = port.replace('.-.', '/')
-		dir_port_pairs.append(dir_port_pair(entry, port))
+		id = int(entry.split('_')[-1])
+		arduino_builds.append(arduino_build(arduino_boards[id], entry, True))
 
-if len(dir_port_pairs) == 0:
+if len(arduino_builds) == 0:
 	print('No device builds found')
 	sys.exit(1)
 
-upload_targets = get_upload_targets('build/' + dir_port_pairs[0].directory)
+# Get the list of targets
 
+
+# Determine targets that require a formatted SD card and lots of memory
 for upload_target in upload_targets:
-	print(upload_target)
-	CMakeBuild.do_upload('test_open_address_hash-upload', 'build/' + dir_port_pairs[0].directory, False)
-	planck_serial.parse_serial('test_results', dir_port_pairs[0].port, print_info=True, clear_folder=True)
+	# TODO: Build each target and check if the SD lib was included and if the memory size is appropriate
+	do_test_build(upload_target)
+
+# Perform uploading and job distribution management
+for upload_target in upload_targets:
+	args = {'target_name': upload_target, 'arduino_build': arduino_builda, 'output_dir': 'test_results'}
+	threading.Thread(target=upload_and_read_serial, kwargs=args)

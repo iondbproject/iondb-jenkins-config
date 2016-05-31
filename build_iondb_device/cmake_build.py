@@ -1,14 +1,18 @@
 import subprocess
+from subprocess import Popen, PIPE, STDOUT
 import os
 import sys
 import shutil
+from collections import namedtuple
 
+build_result = namedtuple('build_result', ['status', 'output'])
 devnull = open(os.devnull, 'w')
 
 
 class CMakeBuild:
 	@staticmethod
-	def do_build(project_path_rel_build_dir, build_dir, board_type, port, suppress_output, processor=None, cs_pins=None):
+	def do_cmake_build(project_path_rel_build_dir, build_dir, board_type, port, suppress_output,
+					   processor=None, cs_pins=None):
 		try:
 			shutil.rmtree(build_dir)
 		except OSError:
@@ -31,19 +35,40 @@ class CMakeBuild:
 
 		command.append(project_path_rel_build_dir)
 
-		arguments = {}
-		if suppress_output:
-			arguments = {'stdout': devnull, 'stderr': devnull}
+		proc = subprocess.Popen(command, cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-		return subprocess.call(command, cwd=build_dir, **arguments)
+		output = ''
+		while proc.poll() is None:
+			line = proc.stdout.readline().decode('ascii')
+
+			if not suppress_output:
+				print(line, end='')
+
+			output += line
+
+		proc.wait(120)
+
+		return build_result(proc.returncode, output)
 
 	@staticmethod
-	def do_upload(target_name, build_dir, suppress_output):
-		arguments = {}
-		if suppress_output:
-			arguments = {'stdout': devnull, 'stderr': devnull}
+	def execute_make_target(target_name, build_dir, fast, suppress_output):
+		if fast:
+			target_name += '/fast'
 
-		return subprocess.call(['make', target_name], cwd=build_dir, **arguments)
+		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+		output = ''
+		while proc.poll() is None:
+			line = proc.stdout.readline().decode('ascii')
+
+			if not suppress_output:
+				print(line, end='')
+
+			output += line
+
+		proc.wait(120)
+
+		return build_result(proc.returncode, output)
 
 	@staticmethod
 	def clean_build(build_dir):
