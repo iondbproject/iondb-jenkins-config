@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testrun name="ToastTest" project="Toast" tests="2" started="2" failures="1" errors="0" ignored="0">
+  <testsuite name="ToastTest" time="0.002">
+    <testcase name="testFail" classname="ToastTest" time="0.001">
+      	<failure>
+      		FAIL MSG
+		</failure>
+    </testcase>
+    <testcase name="testPass" classname="ToastTest" time="0.0"/>
+  </testsuite>
+</testrun>
