@@ -12,40 +12,40 @@ sys.path.append('../build_iondb_device/')
 
 from cmake_build import CMakeBuild
 from arduino_boards_serial import ArduinoBoardsSerial
+from make_targets import MakeTargets, BoardTargets
 
-arduino_build = namedtuple('arduino_build', ['directory', 'arduino', 'targets' 'is_free'])
+build_data = namedtuple('build_data', ['arduino', 'dir', 'targets', 'is_free'])
 
 
 def upload_and_read_serial(target_name, arduino_build, output_dir):
-	arduino_build.is_free = False
-	CMakeBuild.execute_make_target(target_name, 'build/' + arduino_build.directory, True, True)
+	# arduino_build.is_free = False
+	CMakeBuild.execute_make_target(target_name, '../iondb/build/' + arduino_build.dir, False, False)
 	planck_serial.parse_serial(output_dir, arduino_build.arduino.port, print_info=True, clear_folder=True)
-	arduino_build.is_free = True
+	# arduino_build.is_free = True
 
 
 # Note: We assume that the list of ArduinoBoards is already sorted by ID.
-arduino_boards = ArduinoBoardsSerial.load_arduino_boards('connected_arduino_boards.txt')
+arduino_boards = ArduinoBoardsSerial.load_arduino_boards('../build_iondb_device/connected_arduino_boards.txt')
+arduino_board_targets = MakeTargets.load_board_make_targets('../build_iondb_device/make_board_targets.txt')
 arduino_builds = []
 
 # Match the Arduino boards to their corresponding builds and targets
-for entry in os.listdir('build/'):
-	if os.path.isdir('build/' + entry):
+for entry in os.listdir('../iondb/build/'):
+	if os.path.isdir('../iondb/build/' + entry):
 		id = int(entry.split('_')[-1])
-		arduino_builds.append(arduino_build(arduino_boards[id], entry, True))
+		arduino_builds.append(build_data(arduino_boards[id], entry, arduino_board_targets[id].targets, True))
 
 if len(arduino_builds) == 0:
 	print('No device builds found')
 	sys.exit(1)
 
-# Get the list of targets
-
-
-# Determine targets that require a formatted SD card and lots of memory
-for upload_target in upload_targets:
-	# TODO: Build each target and check if the SD lib was included and if the memory size is appropriate
-	do_test_build(upload_target)
+upload_targets = MakeTargets.load_all_make_targets('../build_iondb_device/all_upload_targets.txt')
 
 # Perform uploading and job distribution management
-for upload_target in upload_targets:
-	args = {'target_name': upload_target, 'arduino_build': arduino_builda, 'output_dir': 'test_results'}
-	threading.Thread(target=upload_and_read_serial, kwargs=args)
+# for upload_target in upload_targets:
+for target in arduino_builds[0].targets:
+	if target.strip() == 'test_open_address_hash-upload':
+		print('Building')
+		upload_and_read_serial('test_open_address_hash-upload', arduino_builds[0], 'planck_output')
+	# args = {'target_name': upload_target, 'arduino_build': arduino_builda, 'output_dir': 'test_results'}
+	# threading.Thread(target=upload_and_read_serial, kwargs=args)

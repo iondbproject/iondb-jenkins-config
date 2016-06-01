@@ -53,6 +53,7 @@ class CMakeBuild:
 	@staticmethod
 	def execute_make_target(target_name, build_dir, fast, suppress_output):
 		if fast:
+			target_name = target_name.strip() # TODO
 			target_name += '/fast'
 
 		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

@@ -205,8 +205,8 @@ class ArduinoBoardsSerial:
 		else:
 			print('Trying port ' + port + ' for mcu ' + processor)
 
-		compile_result = CMakeBuild.do_cmake_build('../', 'test_sketch/build', board_type, port, True, processor, cs_pins_to_check).status
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'test_sketch/build', False, True).status
+		compile_result = CMakeBuild.do_cmake_build('../', 'test_sketch/build', board_type, port, False, processor, cs_pins_to_check).status
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'test_sketch/build', False, False).status
 		CMakeBuild.clean_build('test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0

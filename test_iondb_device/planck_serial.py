@@ -7,7 +7,7 @@ opening_tag = "<suite>"
 closing_tag = "</suite>"
 
 
-def parse_serial(output_folder, port, baud_rate=9600, timeout=120, print_info=False, clear_folder=False):
+def parse_serial(output_folder, port, baud_rate=9600, timeout=10, print_info=False, clear_folder=False):
 	# Set up folder structure, if required.
 	if clear_folder:
 		try:
@@ -55,7 +55,14 @@ def output_test(ser, suite_no, print_info):
 	# only occur at the end of lines.
 	linein = ""
 	try:
-		linein = ser.readline().decode("ascii")
+		linein = ser.readline()
+		while b'<suite>' not in linein:
+			print(linein)
+			linein = ser.readline()
+
+		linein = opening_tag + linein.rsplit(b'<suite>', 1)[1].decode('ascii')
+
+		# linein = ser.readline().decode("ascii")
 		if print_info:
 			print("\t" + linein, end="")
 
@@ -94,7 +101,9 @@ def output_test(ser, suite_no, print_info):
 			elif in_suite:
 				lines.append(linein)
 
-			linein = ser.readline().decode("ascii")
+			linein = ser.readline()
+			print(linein)
+			linein = linein.decode("ascii")
 			if print_info:
 				print("\t" + linein, end="")
 
@@ -106,5 +115,7 @@ def output_test(ser, suite_no, print_info):
 
 	# Cancel and give an error if a non-ASCII character is ever found in the data.
 	except UnicodeDecodeError:
+		print("Line:")
+		print(linein)
 		print("ERROR: Non-ASCII characters found in output. Please check the source text and baud rate.")
 		return False

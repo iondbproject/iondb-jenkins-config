@@ -109,4 +109,5 @@ for arduino_board in arduino_boards:
 
 	arduino_board_targets.append(BoardTargets(arduino_board.id, board_targets))
 
-MakeTargets.save_make_targets(arduino_board_targets, 'make_board_targets.txt')
+MakeTargets.save_board_make_targets(arduino_board_targets, 'make_board_targets.txt')
+MakeTargets.save_all_make_targets(upload_targets, 'all_upload_targets.txt')

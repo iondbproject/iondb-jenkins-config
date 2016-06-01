@@ -17,7 +17,33 @@ class MakeTargets:
 		return targets
 
 	@staticmethod
-	def save_make_targets(board_targets, file_name):
+	def save_all_make_targets(targets, file_name):
+		try:
+			file = open(file_name, 'w')
+
+			for target in targets:
+				file.write(target + '\n')
+
+			file.close()
+		except IOError:
+			print('Failed to save make targets to a file')
+			return False
+
+		return True
+
+	@staticmethod
+	def load_all_make_targets(file_name):
+		try:
+			with open(file_name) as file:
+				lines = file.readlines()
+		except IOError:
+			print('Failed to read make targets from file')
+			return []
+
+		return lines
+
+	@staticmethod
+	def save_board_make_targets(board_targets, file_name):
 		try:
 			file = open(file_name, 'w')
 
@@ -33,7 +59,7 @@ class MakeTargets:
 
 
 	@staticmethod
-	def load_make_targets(file_name):
+	def load_board_make_targets(file_name):
 		board_targets = []
 
 		try:
@@ -47,7 +73,7 @@ class MakeTargets:
 			tokens = [token.strip() for token in line.split(',')]
 			board_id = tokens[0]
 			tokens.pop(0)
-			board_targets.append(BoardTargets(tokens[0], tokens))
+			board_targets.append(BoardTargets(board_id, tokens))
 
 		return board_targets
 
@@ -69,4 +95,4 @@ class BoardTargets:
 		for target in self.targets:
 			temp_string += ', ' + target
 
-		return temp_string.rsplit(', ', 1)[0]
+		return temp_string
