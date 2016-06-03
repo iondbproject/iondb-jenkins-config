@@ -5,14 +5,16 @@ import sys
 import shutil
 from collections import namedtuple
 
+sys.path.append('../')
+
+import configuration
+
 build_result = namedtuple('build_result', ['status', 'output'])
-devnull = open(os.devnull, 'w')
 
 
 class CMakeBuild:
 	@staticmethod
-	def do_cmake_build(project_path_rel_build_dir, build_dir, board_type, port, suppress_output,
-					   processor=None, cs_pins=None):
+	def do_cmake_build(project_path_rel_build_dir, build_dir, board_type, port, output_to_console, processor=None):
 		try:
 			shutil.rmtree(build_dir)
 		except OSError:
@@ -24,14 +26,10 @@ class CMakeBuild:
 			print('Failed to create build directory')
 			sys.exit(1)
 
-		command = ['cmake', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port]
+		command = ['cmake', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port, '-DBAUD_RATE=' + str(configuration.baud_rate)]
 
 		if processor is not None:
 			command.append('-DPROCESSOR=' + processor)
-
-		if cs_pins is not None:
-			list_of_cs_pins = [str(pin) for pin in cs_pins]
-			command.append('-DPINS=' + ','.join(list_of_cs_pins))
 
 		command.append(project_path_rel_build_dir)
 
@@ -41,7 +39,7 @@ class CMakeBuild:
 		while proc.poll() is None:
 			line = proc.stdout.readline().decode('ascii')
 
-			if not suppress_output:
+			if output_to_console:
 				print(line, end='')
 
 			output += line
@@ -51,9 +49,8 @@ class CMakeBuild:
 		return build_result(proc.returncode, output)
 
 	@staticmethod
-	def execute_make_target(target_name, build_dir, fast, suppress_output):
+	def execute_make_target(target_name, build_dir, fast, output_to_console):
 		if fast:
-			target_name = target_name.strip() # TODO
 			target_name += '/fast'
 
 		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -62,7 +59,7 @@ class CMakeBuild:
 		while proc.poll() is None:
 			line = proc.stdout.readline().decode('ascii')
 
-			if not suppress_output:
+			if output_to_console:
 				print(line, end='')
 
 			output += line

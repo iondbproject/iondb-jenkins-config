@@ -1,29 +1,31 @@
 from cmake_build import CMakeBuild
-import boards as board_ids
+import board_definitions as board_ids
+import sys
 import serial.tools.list_ports
 import usb
 import colorama
 from colorama import Fore, Back, Style
-from collections import namedtuple
 
-excluded_ports = ['bluetooth', 'wireless']
-cs_pins_to_check = [4, 10]
-sd_card_return_type = namedtuple('sd_card_return_type', ['has_sd', 'has_formatted_sd'])
+sys.path.append('../')
+
+import configuration
+
 colorama.init()
 
 
 class ArduinoBoardsSerial:
 	@staticmethod
 	def save_arduino_boards(arduino_boards, file_name):
+		arduino_boards.sort(key=lambda x: x.id, reverse=False)
+
 		try:
 			file = open(file_name, 'w')
 
 			for arduino_board in arduino_boards:
-				file.write(repr(arduino_board))
+				file.write(repr(arduino_board) + '\n')
 
 			file.close()
 		except IOError:
-			print('Failed to save connected Arduino boards to a file')
 			return False
 
 		return True
@@ -56,18 +58,39 @@ class ArduinoBoardsSerial:
 
 			arduino_boards.append(ArduinoBoard(*tokens))
 
+		arduino_boards.sort(key=lambda x: x.id, reverse=False)
+
 		return arduino_boards
 
 	@staticmethod
-	def get_connected_arduino_boards(board_types: 'list of strings' = None, test_for_sd=False) -> 'list of ArduinoBoards':
+	def get_connected_arduino_boards(board_types: 'list of strings'=None, processors=None, test_for_conditions=False) -> 'list of ArduinoBoards':
 		if board_types is None or len(board_types) == 0:
 			board_types = ArduinoBoardsSerial.get_connected_device_types()
 
-		arduino_boards = [ArduinoBoard(board_type) for board_type in board_types]
+		arduino_boards = []
+		for i in range(len(board_types)):
+			processor = None
+			if processors is not None and len(processors) > 0:
+				processor = processors[i]
+
+			arduino_boards.append(ArduinoBoard(board_types[i], processor=processor))
+
+		if len(arduino_boards) == 0:
+			print('No boards found')
+			return []
+
+		print('  Boards: ', end='')
+		temp_string = ''
+		for arduino_board in arduino_boards:
+			temp_string += arduino_board.board_type + ', '
+
+		temp_string = temp_string.rstrip(', ')
+		print(temp_string)
 
 		# Get the list of ports for connected devices.
 		connected_ports = list(serial.tools.list_ports.comports())
 		if len(connected_ports) == 0:
+			print('No ports found')
 			return []
 
 		# Remove ports that contain specific names. For example, bluetooth and wireless
@@ -102,21 +125,27 @@ class ArduinoBoardsSerial:
 				test_board_types = [arduino_board.board_type]
 
 			for test_board_type in test_board_types:
-				# Check to see if there is more than one mcu
 				test_processors = ['undefined']
-				if test_board_type in board_ids.processors:
+
+				# If processor is defined by user, check to see if there is more than one processor
+				if arduino_board.processor is not None:
+					test_processor = [arduino_board.processor]
+				elif test_board_type in board_ids.processors:
 					test_processors = board_ids.processors[test_board_type]
 
 				for test_processor in test_processors:
 					if arduino_board.port is None:
+						build_before_upload = True
+
 						for connected_port in connected_ports:
-							# TODO: Only compile the first time and then use the fast upload
-							if ArduinoBoardsSerial.is_correct_device(test_board_type, test_processor, connected_port.device):
+							if ArduinoBoardsSerial.is_correct_device(test_board_type, test_processor, connected_port.device, build_before_upload):
 								arduino_board.port = connected_port.device
 								connected_ports.remove(connected_port)
 								found_matching_device = True
 								break
-					elif test_for_sd:
+
+							build_before_upload = False
+					elif test_for_conditions:
 						if ArduinoBoardsSerial.is_correct_device(test_board_type, test_processor, arduino_board.port):
 							found_matching_device = True
 					else:
@@ -129,29 +158,18 @@ class ArduinoBoardsSerial:
 						if test_processor != 'undefined':
 							arduino_board.processor = test_processor
 
-						print('Successfully matched ' + (Fore.GREEN + test_board_type + Style.RESET_ALL) +
+						print('  Successfully matched ' + (Fore.GREEN + test_board_type + Style.RESET_ALL) +
 							  ' to port ' + arduino_board.port)
 
-						if test_for_sd:
-							print('Attempting to detect if there is an SD card')
-							sd_card_compatibility = ArduinoBoardsSerial.serial_detect_sd_compatibility(arduino_board.port)
-							arduino_board.has_sd_card = sd_card_compatibility.has_sd
-							arduino_board.has_formatted_sd_card = sd_card_compatibility.has_formatted_sd
-
-							if arduino_board.has_sd_card and arduino_board.has_formatted_sd_card:
-								print('Found a formatted SD card')
-							elif arduino_board.has_sd_card:
-								print('Found an unformatted SD card')
-							else:
-								print('Did not detect an SD card')
+						if test_for_conditions:
+							ArduinoBoardsSerial.condition_test(arduino_board, False)
 
 						break
-
 				if found_matching_device:
 					break
 
 			if not found_matching_device:
-				print('Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
+				print('  Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
 			else:
 				arduino_board.id = num_connected_boards
 				connected_arduino_boards.append(arduino_board)
@@ -198,58 +216,68 @@ class ArduinoBoardsSerial:
 		return board_types
 
 	@staticmethod
-	def is_correct_device(board_type, processor, port):
+	def is_correct_device(board_type, processor, port, build_before=True):
 		if processor == 'undefined' or processor is None:
-			print('Trying port ' + port)
+			print('  Trying port ' + port)
 			processor = None
 		else:
-			print('Trying port ' + port + ' for mcu ' + processor)
+			print('  Trying port ' + port + ' with ' + processor + ' processor')
 
-		compile_result = CMakeBuild.do_cmake_build('../', 'test_sketch/build', board_type, port, False, processor, cs_pins_to_check).status
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'test_sketch/build', False, False).status
-		CMakeBuild.clean_build('test_sketch/build')
+		compile_result = 0
+		if build_before:
+			compile_result = CMakeBuild.do_cmake_build('../', 'helper_files/test_sketch/build', board_type, port, configuration.output_debug, processor).status
+
+		fast = False
+		if not build_before:
+			fast = True
+
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'helper_files/test_sketch/build', fast, configuration.output_debug).status
+		CMakeBuild.clean_build('helper_files/test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
+
+	@staticmethod
+	def condition_test(arduino_board, upload_before=True):
+		print('  Attempting condition detection...')
+
+		if upload_before:
+			if not ArduinoBoardsSerial.is_correct_device(arduino_board.board_type, arduino_board.processor, arduino_board.port):
+				print('Failed to upload to device')
+				return False
+
+		conditions = []
+		ser = serial.Serial(arduino_board.port, configuration.baud_rate, timeout=configuration.baud_rate)
+
+		linein = ser.readline()
+		while b'DONE' not in linein:
+			for condition in configuration.conditions:
+				if str.encode(condition[0]) in linein:
+					conditions.append(condition[0])
+					print('  Condition ' + condition[0] + (Fore.GREEN + ' satisfied' + Style.RESET_ALL))
+
+			linein = ser.readline()
+
+		arduino_board.conditions = conditions
+		return True
 
 	@staticmethod
 	def check_if_possible_arduino_port(port):
 		possible_arduino_port = True
 
-		for excluded_port in excluded_ports:
+		for excluded_port in configuration.excluded_ports:
 			if excluded_port in port.lower():
 				possible_arduino_port = False
 				break
 
 		return possible_arduino_port
 
-	@staticmethod
-	def serial_detect_sd_compatibility(port):
-		ser = serial.Serial(port, 9600, timeout=20)
-
-		linein = ser.readline().decode('ascii')
-		while linein != '':
-			if 'SD_CARD' in linein:
-				if 'SD_FORMATTED' in linein:
-					return sd_card_return_type(has_sd=True, has_formatted_sd=True)
-
-				return sd_card_return_type(has_sd=True, has_formatted_sd=False)
-
-			if str(cs_pins_to_check[-1]) in linein:
-				break
-
-			linein = ser.readline().decode('ascii')
-
-		return sd_card_return_type(has_sd=False, has_formatted_sd=False)
-
-
 class ArduinoBoard:
-	def __init__(self, board_type, id=0, processor=None, port=None, has_sd_card=False, has_formatted_sd_card=False):
+	def __init__(self, board_type, id=0, processor=None, port=None, conditions=None):
 		self.board_type = board_type
 		self.id = id
 		self.processor = processor
 		self.port = port
-		self.has_sd_card = has_sd_card
-		self.has_formatted_sd_card = has_formatted_sd_card
+		self.conditions = conditions
 
 	def __str__(self):
 		temp_string = self.board_type
@@ -261,11 +289,8 @@ class ArduinoBoard:
 		if self.port is not None:
 			temp_string += ', ' + self.port
 
-		if self.has_sd_card:
-			temp_string += ', SD card'
-
-		if self.has_formatted_sd_card:
-			temp_string += ', formatted SD card'
+		for condition in self.conditions:
+			temp_string += ', ' + condition
 
 		return temp_string
 
@@ -274,8 +299,9 @@ class ArduinoBoard:
 		temp_string += ', ' + str(self.id)
 		temp_string += ', ' + str(self.processor)
 		temp_string += ', ' + str(self.port)
-		temp_string += ', ' + str(self.has_sd_card)
-		temp_string += ', ' + str(self.has_formatted_sd_card)
+
+		for condition in self.conditions:
+			temp_string += ', ' + str(condition)
 
 		return temp_string
 
