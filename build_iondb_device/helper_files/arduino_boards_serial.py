@@ -5,6 +5,9 @@ import serial.tools.list_ports
 import usb
 import colorama
 from colorama import Fore, Back, Style
+from collections import namedtuple
+
+target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 
 sys.path.append('../')
 
@@ -22,6 +25,7 @@ class ArduinoBoardsSerial:
 			file = open(file_name, 'w')
 
 			for arduino_board in arduino_boards:
+				print(repr(arduino_board))
 				file.write(repr(arduino_board) + '\n')
 
 			file.close()
@@ -46,17 +50,13 @@ class ArduinoBoardsSerial:
 			if tokens[2] == 'None':
 				tokens[2] = None
 
-			if tokens[4] == 'True':
-				tokens[4] = True
-			else:
-				tokens[4] = False
+			conditions = []
+			for i in range(4, len(tokens), 2):
+				if tokens[i + 1] == 'None':
+					tokens[i + 1] = None
+				conditions.append(target_condition(tokens[i], tokens[i + 1]))
 
-			if tokens[5] == 'True':
-				tokens[5] = True
-			else:
-				tokens[5] = False
-
-			arduino_boards.append(ArduinoBoard(*tokens))
+			arduino_boards.append(ArduinoBoard(tokens[0], int(tokens[1]), tokens[2], tokens[3], conditions))
 
 		arduino_boards.sort(key=lambda x: x.id, reverse=False)
 
@@ -76,7 +76,6 @@ class ArduinoBoardsSerial:
 			arduino_boards.append(ArduinoBoard(board_types[i], processor=processor))
 
 		if len(arduino_boards) == 0:
-			print('No boards found')
 			return []
 
 		print('  Boards: ', end='')
@@ -129,7 +128,7 @@ class ArduinoBoardsSerial:
 
 				# If processor is defined by user, check to see if there is more than one processor
 				if arduino_board.processor is not None:
-					test_processor = [arduino_board.processor]
+					test_processors = [arduino_board.processor]
 				elif test_board_type in board_ids.processors:
 					test_processors = board_ids.processors[test_board_type]
 
@@ -250,9 +249,14 @@ class ArduinoBoardsSerial:
 
 		linein = ser.readline()
 		while b'DONE' not in linein:
+			cs_pin = None
+			if b'CS_PIN:' in linein:
+				cs_pin = int(linein.split(b'CS_PIN: ')[1])
+				linein = ser.readline()
+
 			for condition in configuration.conditions:
 				if str.encode(condition[0]) in linein:
-					conditions.append(condition[0])
+					conditions.append(target_condition(condition[0], cs_pin))
 					print('  Condition ' + condition[0] + (Fore.GREEN + ' satisfied' + Style.RESET_ALL))
 
 			linein = ser.readline()
@@ -280,17 +284,18 @@ class ArduinoBoard:
 		self.conditions = conditions
 
 	def __str__(self):
-		temp_string = self.board_type
+		temp_string = str(self.board_type)
 		temp_string += ', ID: ' + str(self.id)
 
 		if self.processor is not None:
-			temp_string += ', ' + self.processor
+			temp_string += ', ' + str(self.processor)
 
 		if self.port is not None:
-			temp_string += ', ' + self.port
+			temp_string += ', ' + str(self.port)
 
-		for condition in self.conditions:
-			temp_string += ', ' + condition
+		if self.conditions is not None:
+			for condition in self.conditions:
+				temp_string += ', ' + str(condition.library) + ', ' + str(condition.cs_pin)
 
 		return temp_string
 
@@ -300,8 +305,9 @@ class ArduinoBoard:
 		temp_string += ', ' + str(self.processor)
 		temp_string += ', ' + str(self.port)
 
-		for condition in self.conditions:
-			temp_string += ', ' + str(condition)
+		if self.conditions is not None:
+			for condition in self.conditions:
+				temp_string += ', ' + str(condition.library) + ', ' + str(condition.cs_pin)
 
 		return temp_string
 

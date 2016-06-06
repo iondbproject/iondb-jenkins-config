@@ -1,4 +1,3 @@
-from arduino_boards_serial import ArduinoBoardsSerial, ArduinoBoard
 import subprocess
 import re
 import sys
@@ -24,8 +23,8 @@ class MakeTargets:
 	@staticmethod
 	def check_target_compatibility(target_output, arduino_board):
 		for build_condition in configuration.conditions:
-			if build_condition[0] in arduino_board.conditions:
-				if build_condition[1] is not None and build_condition[1] in target_output:
+			if build_condition[1] is not None:
+				if build_condition[1] in target_output and build_condition[0] not in arduino_board.conditions:
 					return False
 
 		program_size_percentages = re.findall('\[Program: \d+ bytes \((\d+\.\d+)%\)\]', target_output)

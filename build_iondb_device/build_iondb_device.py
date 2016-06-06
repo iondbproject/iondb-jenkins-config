@@ -127,7 +127,7 @@ if subprocess.call(['git', 'submodule', 'update', '--remote'], cwd='../iondb', *
 arduino_boards = []
 
 if len(ports) == 0:
-	print('Finding Arduino boards and corresponding ports')
+	print('Finding Arduino boards and their corresponding ports')
 	arduino_boards = ArduinoBoardsSerial.get_connected_arduino_boards(board_types, processors, configuration.test_for_conditions)
 
 	try:
@@ -142,7 +142,7 @@ if len(ports) == 0:
 else:
 	for i in range(len(board_types)):
 		if len(processors) > 0:
-			processor = processors[i]
+			processor = processors[i] # TODO: This could be an issue later when using boards file
 
 		arduino_board = ArduinoBoard(board_types[i], i, processor, ports[i])
 		if configuration.test_for_conditions:
@@ -152,7 +152,7 @@ else:
 			arduino_boards.append(arduino_board)
 
 if len(arduino_boards) == 0:
-	print('No sufficient Arduino boards')
+	print('No sufficient Arduino boards found')
 	sys.exit(1)
 
 #--------------------
@@ -163,15 +163,23 @@ if len(arduino_boards) == 0:
 print('Generating Makefiles with CMake for each Arduino board...')
 
 for arduino_board in arduino_boards:
-	if CMakeBuild.do_cmake_build('../' + configuration.project_path_rel_to_build_path, configuration.build_path + arduino_board.board_type + '_' + str(arduino_board.id),
-								 arduino_board.board_type, arduino_board.port, configuration.output_build, arduino_board.processor).status != 0:
+	if CMakeBuild.do_cmake_build('../' + configuration.project_path_rel_to_build_path,
+								 configuration.build_path + arduino_board.board_type + '_' + str(arduino_board.id),
+								 arduino_board.board_type,
+								 arduino_board.port,
+								 configuration.output_build,
+								 arduino_board.processor,
+								 arduino_board.conditions).status != 0:
 		print('  Failed building Makefiles with CMake for ' + arduino_board.board_type)
 		sys.exit(1)
 
 	print('  Successfully built Makefiles for ' + arduino_board.board_type)
 
 # Get upload targets from Makefiles
-upload_targets = MakeTargets.get_upload_targets(configuration.build_path + arduino_boards[0].board_type + '_' + str(arduino_boards[0].id))
+upload_targets = MakeTargets.get_upload_targets(configuration.build_path +
+												arduino_boards[0].board_type + '_' +
+												str(arduino_boards[0].id))
+upload_targets = dict.fromkeys(upload_targets, 0)
 arduino_board_targets = []
 
 print('Building targets for each Arduino board...')
@@ -181,9 +189,12 @@ for arduino_board in arduino_boards:
 	print('Building targets for ' + arduino_board.board_type)
 	board_targets = []
 
-	for upload_target in upload_targets:
+	for upload_target in upload_targets.keys():
 		build_path = configuration.build_path + arduino_board.board_type + '_' + str(arduino_board.id)
-		build_result = CMakeBuild.execute_make_target(upload_target.rsplit('-', 1)[0], build_path, False, configuration.output_build)
+		build_result = CMakeBuild.execute_make_target(upload_target.rsplit('-', 1)[0],
+													  build_path,
+													  False,
+													  configuration.output_build)
 
 		if build_result.status != 0:
 			print('  Failed to build target ' + (Fore.RED + upload_target + Style.RESET_ALL))
@@ -194,8 +205,23 @@ for arduino_board in arduino_boards:
 			if MakeTargets.check_target_compatibility(build_result.output, arduino_board):
 				print('    Target will run on this device')
 				board_targets.append(upload_target)
+				upload_targets[upload_target] += 1
 
 	arduino_board_targets.append(BoardTargets(arduino_board.id, board_targets))
 
-MakeTargets.save_board_make_targets(arduino_board_targets, configuration.board_info_output_path + 'make_board_targets.txt')
-MakeTargets.save_all_make_targets(upload_targets, configuration.board_info_output_path + 'all_upload_targets.txt')
+MakeTargets.save_board_make_targets(arduino_board_targets,
+									configuration.board_info_output_path + 'make_board_targets.txt')
+
+no_compatible_devices = False
+if 0 in upload_targets.values():
+	no_compatible_devices = True
+	upload_targets = {k: v for k, v in upload_targets.items() if v != 0}
+
+MakeTargets.save_all_make_targets(list(upload_targets.keys()),
+								  configuration.board_info_output_path + 'all_upload_targets.txt')
+
+if no_compatible_devices:
+	print('There are targets that cannot be ran because there is no suitable device connected.')
+	sys.exit(1)
+
+print('Build process finished successfully!')

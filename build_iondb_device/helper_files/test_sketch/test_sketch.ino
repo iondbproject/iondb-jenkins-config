@@ -91,6 +91,7 @@ check_chip_select_conditions_helper(
 			}
 		}
 
+        Serial.println("CS_PIN: " + cs_pins_to_check[i]);
 		int result = check_chip_select_conditions(cs_pins_to_check[i]);
 
 		if (result == 1) {

@@ -1,5 +1,4 @@
 import subprocess
-from subprocess import Popen, PIPE, STDOUT
 import os
 import sys
 import shutil
@@ -14,7 +13,7 @@ build_result = namedtuple('build_result', ['status', 'output'])
 
 class CMakeBuild:
 	@staticmethod
-	def do_cmake_build(project_path_rel_build_dir, build_dir, board_type, port, output_to_console, processor=None):
+	def do_cmake_build(project_path_rel_build_dir, build_dir, board_type, port, output_to_console, processor=None, target_conditions=None):
 		try:
 			shutil.rmtree(build_dir)
 		except OSError:
@@ -27,6 +26,11 @@ class CMakeBuild:
 			sys.exit(1)
 
 		command = ['cmake', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port, '-DBAUD_RATE=' + str(configuration.baud_rate)]
+
+		if target_conditions is not None:
+			for target_condition in target_conditions:
+				if target_condition.cs_pin is not None:
+					command.append('-D' + target_condition.library + '_CS=' + target_condition.cs_pin)
 
 		if processor is not None:
 			command.append('-DPROCESSOR=' + processor)

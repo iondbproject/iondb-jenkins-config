@@ -56,17 +56,19 @@ def output_test(ser, suite_no, print_info):
 	linein = ""
 	try:
 		linein = ser.readline()
-		while b'<suite>' not in linein:
+		while b'<suite>' not in linein and linein != b'':
 			print(linein)
 			linein = ser.readline()
 
-		linein = opening_tag + linein.rsplit(b'<suite>', 1)[1].decode('ascii')
+		if linein != b'':
+			linein = opening_tag + linein.rsplit(b'<suite>', 1)[1].decode('ascii')
+		else:
+			linein = ''
 
-		# linein = ser.readline().decode("ascii")
 		if print_info:
 			print("\t" + linein, end="")
 
-		while linein != "":
+		while linein != '':
 
 			# If opening tag comes up while already in suite, treat it as
 			# a device crash/restart, and reset suite contents accordingly.
@@ -102,7 +104,6 @@ def output_test(ser, suite_no, print_info):
 				lines.append(linein)
 
 			linein = ser.readline()
-			print(linein)
 			linein = linein.decode("ascii")
 			if print_info:
 				print("\t" + linein, end="")
