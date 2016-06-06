@@ -18,7 +18,6 @@ def parse_serial(output_folder, port, baud_rate=9600, timeout=10, print_info=Fal
 		os.mkdir(output_folder)
 	except FileExistsError:
 		pass
-	os.chdir(output_folder)
 
 	# Initialize serial connection.
 	# Timeout should be calibrated to ensure enough time for tests to run,
@@ -27,12 +26,12 @@ def parse_serial(output_folder, port, baud_rate=9600, timeout=10, print_info=Fal
 
 	# Start reading one suite at a time until it returns false.
 	suite_no = 1
-	while output_test(ser, suite_no, print_info):
+	while output_test(ser, suite_no, print_info, output_folder):
 		suite_no += 1
 		# (keep reading and writing suites until no more found)
 
 
-def output_test(ser, suite_no, print_info):
+def output_test(ser, suite_no, print_info, output_folder):
 	"""
 	Assuming the project has already been built and uploaded,
 	reads serial connection's output for a particular suite and writes it to file.
@@ -85,7 +84,7 @@ def output_test(ser, suite_no, print_info):
 			# If we find a closing tag and are in a suite (i.e. not catching old data), write the contents.
 			elif closing_tag in linein and in_suite:
 				lines.append(linein)
-				filename = 'planck_output_' + str(suite_no) + '.txt'
+				filename = os.path.join(output_folder, 'planck_output_' + str(suite_no) + '.txt')
 
 				try:
 					with open(filename, 'w') as f:

@@ -35,8 +35,6 @@ check_chip_select_conditions(
 	Sd2Card card;
 
 	if (card.init(SPI_HALF_SPEED, cs_pin)) {
-		Serial.print(" SD_CARD");
-
 		if (SD.begin(cs_pin)) {
 			Serial.print(" FORMATTED_SD_CARD");
 		}
@@ -91,7 +89,8 @@ check_chip_select_conditions_helper(
 			}
 		}
 
-        Serial.println("CS_PIN: " + cs_pins_to_check[i]);
+        Serial.print("CS_PIN: ");
+        Serial.println(cs_pins_to_check[i]);
 		int result = check_chip_select_conditions(cs_pins_to_check[i]);
 
 		if (result == 1) {

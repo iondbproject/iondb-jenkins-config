@@ -30,7 +30,7 @@ class CMakeBuild:
 		if target_conditions is not None:
 			for target_condition in target_conditions:
 				if target_condition.cs_pin is not None:
-					command.append('-D' + target_condition.library + '_CS=' + target_condition.cs_pin)
+					command.append('-D' + target_condition.library + '_CS=' + str(target_condition.cs_pin))
 
 		if processor is not None:
 			command.append('-DPROCESSOR=' + processor)

@@ -250,7 +250,7 @@ class ArduinoBoardsSerial:
 		linein = ser.readline()
 		while b'DONE' not in linein:
 			cs_pin = None
-			if b'CS_PIN:' in linein:
+			if b'CS_PIN' in linein:
 				cs_pin = int(linein.split(b'CS_PIN: ')[1])
 				linein = ser.readline()
 

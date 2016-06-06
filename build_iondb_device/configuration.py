@@ -24,7 +24,7 @@ excluded_ports = ['bluetooth', 'wireless']
 # string is the substring to be checked against the build output. You can also specify None if you wish not to check
 # a substring against the build output.
 test_for_conditions = True
-conditions = [['SD_CARD', None], ['FORMATTED_SD_CARD', '_SD']]
+conditions = [['FORMATTED_SD_CARD', '_SD']]
 
 # This is the maximum allowed memory utilization for the code size on device
 max_program_size_percentage = 99
@@ -37,7 +37,7 @@ max_dynamic_memory_percentage = 80
 output_debug = False
 
 # Output build output to the console
-output_build = True
+output_build = False
 
 # The baud rate used by the serial monitor
 baud_rate = 115200

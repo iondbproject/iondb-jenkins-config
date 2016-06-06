@@ -22,9 +22,10 @@ class MakeTargets:
 
 	@staticmethod
 	def check_target_compatibility(target_output, arduino_board):
+		arduino_build_conditions = [condition.library for condition in arduino_board.conditions]
 		for build_condition in configuration.conditions:
 			if build_condition[1] is not None:
-				if build_condition[1] in target_output and build_condition[0] not in arduino_board.conditions:
+				if build_condition[1] in target_output and build_condition[0] not in arduino_build_conditions:
 					return False
 
 		program_size_percentages = re.findall('\[Program: \d+ bytes \((\d+\.\d+)%\)\]', target_output)

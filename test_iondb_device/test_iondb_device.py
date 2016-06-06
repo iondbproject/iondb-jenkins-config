@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import time
 import subprocess
 import re
 import sys
@@ -65,3 +66,5 @@ while len(upload_targets) > 0:
 
 				if found_compatible_device:
 					break
+
+		time.sleep(0.1)

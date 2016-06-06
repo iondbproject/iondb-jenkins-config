@@ -19,6 +19,6 @@ set(${PROJECT_NAME}_SRCS            sd2card/Sd2Card.h
                                     sd2card/Sd2PinMap.h
                                     sd2card/SdInfo.h)
 
-add_definitions(-DBAUD_RATE=${BAUD_RATE})
+add_definitions("-D BAUD_RATE=${BAUD_RATE}")
 
 generate_arduino_firmware(${PROJECT_NAME})
