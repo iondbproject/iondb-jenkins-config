@@ -132,9 +132,9 @@ if len(ports) == 0:
 
 	try:
 		shutil.rmtree('output')
-		os.makedirs('output')
-	except OSError:
-		print('Failed to make output directory for board and target information')
+	except FileNotFoundError:
+		print('Output directory for board and target information did not exist.')
+	os.makedirs('output', exist_ok=True)
 
 	if not ArduinoBoardsSerial.save_arduino_boards(arduino_boards, configuration.board_info_output_path + 'connected_arduino_boards.txt'):
 		print("Failed to save Arduino boards to a file")
