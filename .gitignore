@@ -76,3 +76,7 @@ Thumbs.db
 
 #Python scrap
 __pycache__/
+
+#Output scrap
+iondb/
+output/

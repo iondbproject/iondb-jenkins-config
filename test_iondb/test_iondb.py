@@ -4,6 +4,7 @@ import sys
 import os
 import os.path
 import shutil
+import glob
 
 sys.path.append("../")
 
@@ -20,8 +21,8 @@ except FileNotFoundError:
 os.makedirs("output/", exist_ok=True)
 os.chdir("output/")
 
-for testexec in os.listdir(BIN_PATH):
-    abstest_path = os.path.join(BIN_PATH, testexec)
+for abstest_path in glob.glob(BIN_PATH + "test_*"):
+    testexec = os.path.basename(abstest_path)
     planck_outputfname = "planckunit_{testname}_output.txt".format(testname=testexec)
     xunit_outputfname = "xunit_{testname}_output.txt".format(testname=testexec)
     os.system("chmod +x {execfp}".format(execfp=abstest_path))
