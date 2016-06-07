@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-suite tests="38" errors-detail="4" errors="4" name="PlanckUnit Output" failures-detail="4" failures="4" test-cases="38" skip="0" reports="1">
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #0" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #1" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #2" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #3" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #4" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #5" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #6" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #7" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #8" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #9" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #10" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #11" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #12" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #13" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #14" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #15" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #16" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #17" />
+   <test-case tests="1" label="A unit test" failures="1" errors="1" name="Test #18">
+      <error>Failed in function 'test_skiplist_delete_nonexist_several', at /Users/kris/muffins/iondb/src/tests/unit/dictionary/skip_list/test_skip_list.c:864: condition was false, expected true</error>
+   </test-case>
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #19" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #20" />
+   <test-case tests="1" label="A unit test" failures="1" errors="1" name="Test #21">
+      <error>Failed in function 'test_skiplist_delete_single_several_noncont', at /Users/kris/muffins/iondb/src/tests/unit/dictionary/skip_list/test_skip_list.c:1036: condition was false, expected true</error>
+   </test-case>
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #22" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #23" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #24" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #25" />
+   <test-case tests="1" label="A unit test" failures="1" errors="1" name="Test #26">
+      <error>Failed in function 'test_skiplist_update_single_nonexist_nonempty', at /Users/kris/muffins/iondb/src/tests/unit/dictionary/skip_list/test_skip_list.c:1154: condition was false, expected true</error>
+   </test-case>
+   <test-case tests="1" label="A unit test" failures="1" errors="1" name="Test #27">
+      <error>Failed in function 'test_skiplist_update_many_nonexist_nonempty', at /Users/kris/muffins/iondb/src/tests/unit/dictionary/skip_list/test_skip_list.c:1199: condition was false, expected true</error>
+   </test-case>
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #28" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #29" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #30" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #31" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #32" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #33" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #34" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #35" />
+   <test-case tests="1" label="A unit test" failures="0" errors="0" name="Test #36" />
+   <test-case tests="1" label="A unit test" failures="1" errors="1" name="Test #37">
+      <error>Failed in function 'test_stringequals_failure', at /Users/kris/muffins/planckunit/examples/test_example.c:70: expected \"apple\", got \"orange\"</error>
+   </test-case>
+</test-suite>

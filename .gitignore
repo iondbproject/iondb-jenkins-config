@@ -73,3 +73,10 @@ Thumbs.db
 
 # Debug files
 *.dSYM/
+
+#Python scrap
+__pycache__/
+
+#Output scrap
+iondb/
+output/
