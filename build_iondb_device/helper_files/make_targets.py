@@ -10,8 +10,8 @@ import configuration
 class MakeTargets:
 	@staticmethod
 	def get_upload_targets(dir):
-		proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE)
-		output = proc.stdout.read().decode('ascii')
+		proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE, universal_newlines=True)
+		output = proc.stdout.read()
 
 		targets = re.findall(r'^([^# \/\t\.%]*):[^=]?', output, flags=re.MULTILINE)
 		targets = [target.strip() for target in targets]

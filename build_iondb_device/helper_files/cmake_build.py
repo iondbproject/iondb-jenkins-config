@@ -37,11 +37,11 @@ class CMakeBuild:
 
 		command.append(project_path_rel_build_dir)
 
-		proc = subprocess.Popen(command, cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		proc = subprocess.Popen(command, cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
 		output = ''
 		while proc.poll() is None:
-			line = proc.stdout.readline().decode('ascii')
+			line = proc.stdout.readline()
 
 			if output_to_console:
 				print(line, end='')
@@ -57,11 +57,12 @@ class CMakeBuild:
 		if fast:
 			target_name += '/fast'
 
-		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+		                        universal_newlines=True)
 
 		output = ''
 		while proc.poll() is None:
-			line = proc.stdout.readline().decode('ascii')
+			line = proc.stdout.readline()
 
 			if output_to_console:
 				print(line, end='')
