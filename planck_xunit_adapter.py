@@ -25,7 +25,7 @@ def adaptPlanckFile(suitename, targetfile, destinationfile=None):
     summary = {}
     error_msg = ""
     for line in targetfile:
-        line = line.strip()
+        line = line.strip().encode("utf-8").decode("ascii", "ignore")
 
         matchobj = re.search(r"<test>line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",message:\"(?P<message>.*?)\"<\/test>", line)
         if matchobj:
