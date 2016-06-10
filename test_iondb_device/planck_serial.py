@@ -9,6 +9,8 @@ closing_tag = "</suite>"
 error_open_tag = "<planck_serial_error>"
 error_close_tag = "</planck_serial_error>"
 
+output_filename_syntax = "planckserial_{target_name}_suite_{suite_no}.txt"
+
 class PlanckAbortError(Exception):
 	"""Exception that's thrown when planck serial must abort a suite early."""
 
@@ -25,6 +27,9 @@ def parse_serial(output_folder, port, baud_rate=9600, timeout=10, print_info=Fal
 		suite_no += 1
 		# (keep reading and writing suites until no more found)
 
+	# We're done, close the serial port and quit
+	ser.close()
+
 def output_test(ser, suite_no, print_info, output_folder, target_name):
 	"""
 	Assuming the project has already been built and uploaded,
@@ -39,7 +44,7 @@ def output_test(ser, suite_no, print_info, output_folder, target_name):
 
 	in_suite = False
 	lines = []
-	filename = os.path.join(output_folder, target_name + '_planck_output_' + str(suite_no) + '.txt')
+	filename = os.path.join(output_folder, output_filename_syntax.format(target_name=target_name, suite_no=suite_no))
 
 	# Ensure that all characters are ASCII in order to avoid garbage data.
 	# New lines must be already present, or produced in a timely manner
@@ -119,7 +124,7 @@ def output_test(ser, suite_no, print_info, output_folder, target_name):
 
 	except PlanckAbortError as pae:
 		if print_info:
-			print("ERROR: " + str(pae).replace(error_open_tag, "").replace(error_close_tag, ""))
+			print("\nERROR: " + str(pae).replace(error_open_tag, "").replace(error_close_tag, ""))
 
 		lines.append(str(pae) + "\n")
 		flush_to_file(filename, lines)

@@ -11,17 +11,17 @@ from collections import namedtuple
 import planck_serial
 
 sys.path.append('../build_iondb_device/')
-
 import configuration
 
 sys.path.append('../build_iondb_device/helper_files/')
-
 from cmake_build import CMakeBuild
 from arduino_boards_serial import ArduinoBoardsSerial
 from make_targets import MakeTargets, BoardTargets
 
-build_data = namedtuple('build_data', ['arduino', 'dir', 'targets'])
+sys.path.append("../")
+import planck_xunit_adapter as pxa
 
+build_data = namedtuple('build_data', ['arduino', 'dir', 'targets'])
 
 # GLOBALS
 result_output_dir = 'test_results'
@@ -30,7 +30,7 @@ def upload_and_read_serial(target_name, arduino_build, output_dir):
 	# print('test')
 	CMakeBuild.execute_make_target(target_name, configuration.build_path + arduino_build[0].dir, False, configuration.output_build)
 	planck_serial.parse_serial(output_dir, arduino_build[0].arduino.port, print_info=True, 
-	                           baud_rate=configuration.baud_rate, target_name=target_name)
+							   baud_rate=configuration.baud_rate, target_name=target_name)
 	arduino_build[1] = True
 
 
@@ -58,6 +58,8 @@ except FileNotFoundError:
 os.makedirs(result_output_dir, exist_ok=True)
 
 # Perform uploading and job distribution management
+# List of threads that we've executed.
+testjobs = []
 while len(upload_targets) > 0:
 	for arduino_build in arduino_builds:
 		if arduino_build[1]:
@@ -68,6 +70,7 @@ while len(upload_targets) > 0:
 					if upload_target == arduino_target:
 						args = {'target_name': upload_target, 'arduino_build': arduino_build, 'output_dir': result_output_dir}
 						thread = threading.Thread(target=upload_and_read_serial, kwargs=args)
+						testjobs.append(thread)
 						arduino_build[1] = False
 						thread.start()
 
@@ -79,3 +82,26 @@ while len(upload_targets) > 0:
 					break
 
 		time.sleep(0.1)
+
+# Wait for all jobs to finish
+for job in testjobs:
+	job.join()
+
+# Post-process all of the PlanckUnit output files created to convert them to xunit style
+os.chdir(result_output_dir)
+planckserial_filename_regex = planck_serial.output_filename_syntax.replace("{target_name}", r"(?P<target_name>.*?)").replace("{suite_no}", r"(?P<suite_no>.*?)")
+for testfile in os.listdir():
+	matchobj = re.search(planckserial_filename_regex, testfile)
+	if not matchobj:
+		print(testfile + " did not conform to the expected output filename format")
+		continue
+
+	testinfo = matchobj.groupdict()
+
+	xunit_outputfname = "xunit_{target_name}_{suite_no}_output.txt".format(**testinfo)
+
+	print("Adapting {pl} -> {xl}...".format(pl=testfile, xl=xunit_outputfname))
+	with open(testfile, "r+") as planck_file, open(xunit_outputfname, "w+") as xunit_file:
+		pxa.adaptPlanckFile(testinfo["target_name"], planck_file, xunit_file)
+
+

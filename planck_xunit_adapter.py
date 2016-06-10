@@ -23,6 +23,7 @@ def adaptPlanckFile(suitename, targetfile, destinationfile=None):
 
     testcases = []
     summary = {}
+    error_msg = ""
     for line in targetfile:
         line = line.strip()
 
@@ -34,19 +35,23 @@ def adaptPlanckFile(suitename, targetfile, destinationfile=None):
         if summobj:
             summary = summobj.groupdict()
 
+        errorobj = re.search(r"<planck_serial_error>(?P<error_msg>.*?)<\/planck_serial_error>", line)
+        if errorobj:
+            error_msg = errorobj.group(1)
+
     # for test in testcases:
     #     print(test)
     # print()
     # print(summary)
 
-    summary["total_failed"] = int(summary["total_tests"]) - int(summary["total_passed"])
+    summary["total_failed"] = int(summary.get("total_tests", 0)) - int(summary.get("total_passed", 0))
 
     runattrs = {
         "name": suitename,
         "project": "IonDB",
         "tests": len(testcases),
         "started": len(testcases),
-        "failures": summary["total_failed"],
+        "failures": summary.get("total_failed", 0),
         "errors": 0,
         "ignored": 0,
     }
@@ -55,7 +60,21 @@ def adaptPlanckFile(suitename, targetfile, destinationfile=None):
     writeXunitTag("testrun", runattrs)
     writeXunitTag("testsuite", {"name": suitename, "time": "0.0"})
 
-    for i,case in enumerate(testcases):
+    # If PlanckSerial reported an error, then we want to write a special "testcase" for this error.
+    if error_msg:
+        errorattrs = {
+            "name": "_planck_error",
+            "classname": suitename,
+            "time": "0.0",
+        }
+
+        writeXunitTag("testcase", errorattrs)
+        writeXunitTag("failure")
+        print(error_msg)
+        writeXunitTag("/failure")
+        writeXunitTag("/testcase")
+
+    for case in testcases:
         caseattrs = {
             "name": "{funcname}".format(funcname=case["function"]),
             "classname": suitename,
