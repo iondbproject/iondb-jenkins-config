@@ -34,10 +34,10 @@ max_program_size_percentage = 99
 max_dynamic_memory_percentage = 80
 
 # Output debugging information to the console. This includes some of the output from building the test_sketch.
-output_debug = True
+output_debug = False
 
 # Output build output to the console
-output_build = True
+output_build = False
 
 # The baud rate used by the serial monitor
 baud_rate = 115200
