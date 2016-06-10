@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import re
 import sys
+import string
 
 # Outputs PlanckUnit test results in JUnit XML spec.
 
@@ -25,7 +26,7 @@ def adaptPlanckFile(suitename, targetfile, destinationfile=None):
     summary = {}
     error_msg = ""
     for line in targetfile:
-        line = line.strip().encode("utf-8").decode("ascii", "ignore")
+        line = "".join(c for c in line if c in string.printable)
 
         matchobj = re.search(r"<test>line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",message:\"(?P<message>.*?)\"<\/test>", line)
         if matchobj:
