@@ -80,3 +80,4 @@ __pycache__/
 #Output scrap
 iondb/
 output/
+test_results/

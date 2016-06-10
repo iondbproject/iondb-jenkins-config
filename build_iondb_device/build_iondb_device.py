@@ -198,7 +198,8 @@ for arduino_board in arduino_boards:
 
 		if build_result.status != 0:
 			print('  Failed to build target ' + (Fore.RED + upload_target + Style.RESET_ALL))
-			upload_targets[upload_target] += 1
+			# ERIC FIX: Commented out the following line. If we fail to build a target it shouldn't be considered as runnable.
+			# upload_targets[upload_target] += 1
 			# subprocess.call(['java', '-jar', 'jenkins-cli.jar', 'set-build-result unstable'], cwd='../')
 		else:
 			print('  Successfully built target ' + (Fore.GREEN + upload_target + Style.RESET_ALL))
