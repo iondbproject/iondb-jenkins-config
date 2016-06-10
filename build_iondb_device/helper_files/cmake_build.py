@@ -57,8 +57,8 @@ class CMakeBuild:
 		if fast:
 			target_name += '/fast'
 
-		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-		                        universal_newlines=True)
+		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, 
+		                        stderr=subprocess.STDOUT, universal_newlines=True)
 
 		output = ''
 		while proc.poll() is None:
