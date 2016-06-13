@@ -26,9 +26,10 @@ build_data = namedtuple('build_data', ['arduino', 'dir', 'targets'])
 # GLOBALS
 result_output_dir = 'test_results'
 
+
 def upload_and_read_serial(target_name, arduino_build, output_dir):
-	# print('test')
-	CMakeBuild.execute_make_target(target_name, configuration.build_path + arduino_build[0].dir, False, configuration.output_build)
+	CMakeBuild.execute_make_target(target_name, configuration.build_path + arduino_build[0].dir,
+								   False, configuration.output_build)
 	planck_serial.parse_serial(output_dir, arduino_build[0].arduino.port, print_info=True, 
 							   baud_rate=configuration.baud_rate, target_name=target_name)
 	arduino_build[1] = True

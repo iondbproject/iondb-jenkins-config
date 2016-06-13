@@ -1,9 +1,9 @@
 import subprocess
 import re
 import sys
+import helper_functions
 
 sys.path.append('../')
-
 import configuration
 
 
@@ -52,6 +52,7 @@ class MakeTargets:
 			file.close()
 		except IOError:
 			print('Failed to save make targets to a file')
+			helper_functions.output_error_to_file(str(e))
 			return False
 
 		return True
@@ -63,6 +64,7 @@ class MakeTargets:
 				targets = file.readlines()
 		except IOError:
 			print('Failed to read make targets from file')
+			helper_functions.output_error_to_file(str(e))
 			return []
 
 		return [target.strip() for target in targets]
@@ -80,6 +82,7 @@ class MakeTargets:
 			file.close()
 		except IOError:
 			print('Failed to save make targets to a file')
+			helper_functions.output_error_to_file(str(e))
 			return False
 
 		return True
@@ -94,6 +97,7 @@ class MakeTargets:
 				lines = file.readlines()
 		except IOError:
 			print('Failed to read make targets from file')
+			helper_functions.output_error_to_file(str(e))
 			return []
 
 		for line in lines:

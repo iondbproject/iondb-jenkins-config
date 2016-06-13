@@ -2,10 +2,10 @@ import subprocess
 import os
 import sys
 import shutil
+import helper_functions
 from collections import namedtuple
 
 sys.path.append('../')
-
 import configuration
 
 build_result = namedtuple('build_result', ['status', 'output'])
@@ -21,8 +21,9 @@ class CMakeBuild:
 
 		try:
 			os.makedirs(build_dir)
-		except OSError:
+		except OSError as e:
 			print('Failed to create build directory')
+			helper_functions.output_error_to_file(str(e))
 			sys.exit(1)
 
 		command = ['cmake', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port, '-DBAUD_RATE=' + str(configuration.baud_rate)]
@@ -38,17 +39,7 @@ class CMakeBuild:
 		command.append(project_path_rel_build_dir)
 
 		proc = subprocess.Popen(command, cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-
-		output = ''
-		while proc.poll() is None:
-			line = proc.stdout.readline()
-
-			if output_to_console:
-				print(line, end='')
-
-			output += line
-
-		proc.wait(120)
+		output = helper_functions.process_output_stream(proc, output_to_console)
 
 		return build_result(proc.returncode, output)
 
@@ -60,16 +51,7 @@ class CMakeBuild:
 		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, 
 		                        stderr=subprocess.STDOUT, universal_newlines=True)
 
-		output = ''
-		while proc.poll() is None:
-			line = proc.stdout.readline()
-
-			if output_to_console:
-				print(line, end='')
-
-			output += line
-
-		proc.wait(120)
+		output = helper_functions.process_output_stream(proc, output_to_console)
 
 		return build_result(proc.returncode, output)
 

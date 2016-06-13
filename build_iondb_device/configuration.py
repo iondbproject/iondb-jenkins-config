@@ -33,6 +33,12 @@ max_program_size_percentage = 99
 # allocations and memory allocations during runtime so it is advised to not make this 100%.
 max_dynamic_memory_percentage = 80
 
+# Pipe build and debug output to a file. There will still be basic information outputted to the console.
+output_to_file = True
+
+# If you are outputting build and debug info to a file, this is the name of that file.
+output_file_name = 'build_output.txt'
+
 # Output debugging information to the console. This includes some of the output from building the test_sketch.
 output_debug = False
 

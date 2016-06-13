@@ -4,13 +4,13 @@ import sys
 import serial.tools.list_ports
 import usb
 import colorama
+import helper_functions
 from colorama import Fore, Back, Style
 from collections import namedtuple
 
 target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 
 sys.path.append('../')
-
 import configuration
 
 colorama.init()
@@ -29,7 +29,8 @@ class ArduinoBoardsSerial:
 				file.write(repr(arduino_board) + '\n')
 
 			file.close()
-		except IOError:
+		except IOError as e:
+			helper_functions.output_error_to_file(str(e))
 			return False
 
 		return True
@@ -39,8 +40,9 @@ class ArduinoBoardsSerial:
 		try:
 			with open(file_name) as file:
 				lines = file.readlines()
-		except IOError:
+		except IOError as e:
 			print('Failed to read Arduino boards from file')
+			helper_functions.output_error_to_file(str(e))
 			return []
 
 		arduino_boards = []
@@ -63,7 +65,7 @@ class ArduinoBoardsSerial:
 		return arduino_boards
 
 	@staticmethod
-	def get_connected_arduino_boards(board_types: 'list of strings'=None, processors=None, test_for_conditions=False) -> 'list of ArduinoBoards':
+	def get_connected_arduino_boards(board_types=None, processors=None, test_for_conditions=False):
 		if board_types is None or len(board_types) == 0:
 			board_types = ArduinoBoardsSerial.get_connected_device_types()
 
@@ -274,6 +276,7 @@ class ArduinoBoardsSerial:
 				break
 
 		return possible_arduino_port
+
 
 class ArduinoBoard:
 	def __init__(self, board_type, id=0, processor=None, port=None, conditions=None):

@@ -14,8 +14,7 @@ sys.path.append('helper_files/')
 from arduino_boards_serial import ArduinoBoardsSerial, ArduinoBoard
 from cmake_build import CMakeBuild
 from make_targets import MakeTargets, BoardTargets
-
-devnull = open(os.devnull, 'w')
+import helper_functions
 
 
 def print_help():
@@ -54,11 +53,11 @@ for opt, arg in opts:
 	elif opt in ('-f', '--board_file'):
 		board_file = arg
 
-if board_type == None and (processor != None or port != None):
+if board_type is None and (processor is not None or port is not None):
 	print('Error: When specifying a processor type or port, you must also specify the board type.\n')
 	print_help()
 	sys.exit(1)
-if board_type != None and board_file != None:
+if board_type is not None and board_file is not None:
 	print('Error: You cannot specify both a board and a boards file.')
 	print_help()
 	sys.exit(1)
@@ -84,41 +83,54 @@ if len(processors) > 0 and len(processors) != len(board_types):
 if len(ports) > 0 and len(ports) != len(board_types):
 	print('There are more ports specified than there are boards')
 
-#-------------------------------------
-# Clone IonDB and get jenkins-cli.jar
-#-------------------------------------
+#----------------------------------------------------------
+# Create output directory and file for output information
+#----------------------------------------------------------
+
+try:
+	shutil.rmtree('output')
+except FileNotFoundError:
+	print('Output directory for board and target information did not exist.')
+os.makedirs('output', exist_ok=True)
+
+if configuration.output_to_file:
+	try:
+		file = open(configuration.output_file_name, 'w')
+		file.close()
+	except IOError:
+		print('Failed to create build/debug output file.')
+		sys.exit(1)
+
+#--------------
+# Clone IonDB
+#--------------
 
 print('Cloning IonDB')
-
-arguments = {}
-if not configuration.output_build:
-	arguments = {'stdout': devnull, 'stderr': devnull}
 
 try:
 	shutil.rmtree('../iondb/')
 except OSError:
 	pass
 
-if subprocess.call(['git', 'clone', '--depth=1', 'https://github.com/iondbproject/iondb.git', 'iondb', '--recursive', '-b', 'development'], cwd='../', **arguments) != 0:
+arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
+
+proc = subprocess.Popen(['git', 'clone', '--depth=1', 'https://github.com/iondbproject/iondb.git', 'iondb', '--recursive', '-b', 'development'], cwd='../', **arguments)
+helper_functions.process_output_stream(proc, configuration.output_build)
+if proc.returncode != 0:
 	print("Failed to clone IonDB repository")
 	sys.exit(1)
 
-if subprocess.call(['git', 'submodule', 'init'], cwd='../iondb', **arguments) != 0:
+proc = subprocess.Popen(['git', 'submodule', 'init'], cwd='../iondb', **arguments)
+helper_functions.process_output_stream(proc, configuration.output_build)
+if proc.returncode != 0:
 	print("Failed to initialize submodule")
 	sys.exit(1)
 
-if subprocess.call(['git', 'submodule', 'update', '--remote'], cwd='../iondb', **arguments) != 0:
+proc = subprocess.Popen(['git', 'submodule', 'update', '--remote'], cwd='../iondb', **arguments)
+helper_functions.process_output_stream(proc, configuration.output_build)
+if proc.returncode != 0:
 	print("Failed to initialize submodule")
 	sys.exit(1)
-
-# try:
-# 	os.remove('jenkins-cli.jar')
-# except OSError:
-# 	pass
-#
-# if subprocess.call(['wget', '${JENKINS_URL}jnlpJars/jenkins-cli.jar'], cwd='../', **arguments) != 0:
-# 	print("Failed to transfer jenkins-cli.jar")
-# 	sys.exit(1)
 
 #--------------------------------------------------------------------------------------------
 # Match ports to devices if the ports are not specified and check conditions for each device
@@ -129,12 +141,6 @@ arduino_boards = []
 if len(ports) == 0:
 	print('Finding Arduino boards and their corresponding ports')
 	arduino_boards = ArduinoBoardsSerial.get_connected_arduino_boards(board_types, processors, configuration.test_for_conditions)
-
-	try:
-		shutil.rmtree('output')
-	except FileNotFoundError:
-		print('Output directory for board and target information did not exist.')
-	os.makedirs('output', exist_ok=True)
 
 	if not ArduinoBoardsSerial.save_arduino_boards(arduino_boards, configuration.board_info_output_path + 'connected_arduino_boards.txt'):
 		print("Failed to save Arduino boards to a file")
@@ -148,7 +154,7 @@ else:
 		if configuration.test_for_conditions:
 			if ArduinoBoardsSerial.condition_test(arduino_board, True):
 				arduino_boards.append(arduino_board)
-		else: # TODO: have option check to see if board works
+		else: # TODO: maybe have option check to see if board works
 			arduino_boards.append(arduino_board)
 
 if len(arduino_boards) == 0:
@@ -184,6 +190,8 @@ arduino_board_targets = []
 
 print('Building targets for each Arduino board...')
 
+builds_failed = False
+
 # Record which targets will work on which device
 for arduino_board in arduino_boards:
 	print('Building targets for ' + arduino_board.board_type)
@@ -198,9 +206,7 @@ for arduino_board in arduino_boards:
 
 		if build_result.status != 0:
 			print('  Failed to build target ' + (Fore.RED + upload_target + Style.RESET_ALL))
-			# ERIC FIX: Commented out the following line. If we fail to build a target it shouldn't be considered as runnable.
-			# upload_targets[upload_target] += 1
-			# subprocess.call(['java', '-jar', 'jenkins-cli.jar', 'set-build-result unstable'], cwd='../')
+			builds_failed = True
 		else:
 			print('  Successfully built target ' + (Fore.GREEN + upload_target + Style.RESET_ALL))
 
@@ -222,8 +228,13 @@ if 0 in upload_targets.values():
 MakeTargets.save_all_make_targets(list(upload_targets.keys()),
 								  configuration.board_info_output_path + 'all_upload_targets.txt')
 
+if builds_failed:
+	print('There are targets that failed to build.')
+
 if no_compatible_devices:
 	print('There are targets that cannot be ran because there is no suitable device connected.')
-	sys.exit(0) #ERIC FIX: Supress the 1 exit code for now because it fails the jenkin build
-				# See trello task https://trello.com/c/YkHC7RuQ/127-code-review-wade-s-python-arduino-build-test-process-on-device#comment-575b4744e05ef828407d2999
+
+if builds_failed or no_compatible_devices:
+	sys.exit(1)
+
 print('Build process finished')
