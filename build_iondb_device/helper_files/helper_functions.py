@@ -10,8 +10,9 @@ def process_output_stream(process, output_to_console):
 	if configuration.output_to_file:
 		try:
 			file = open(os.path.join(configuration.board_info_output_path, configuration.output_file_name), 'a')
-		except OSError:
+		except OSError as e:
 			print('Failed to open build/debug output file.')
+			print(e)
 			sys.exit(1)
 
 	output = ''
@@ -24,8 +25,9 @@ def process_output_stream(process, output_to_console):
 		if configuration.output_to_file:
 			try:
 				file.write(line)
-			except OSError:
+			except OSError as e:
 				print('Failed to write to build/debug output file.')
+				print(e)
 				sys.exit(1)
 
 		output += line
@@ -33,8 +35,9 @@ def process_output_stream(process, output_to_console):
 	if configuration.output_to_file:
 		try:
 			file.close()
-		except OSError:
+		except OSError as e:
 			print('Failed to close build/debug output file.')
+			print(e)
 			sys.exit(1)
 
 	process.wait(120)
@@ -48,6 +51,7 @@ def output_error_to_file(error):
 			file = open(configuration.output_file_name, 'a')
 			file.write(error)
 			file.close()
-		except OSError:
+		except OSError as e:
 			print('Failed to write to build/debug output file.')
+			print(e)
 			sys.exit(1)

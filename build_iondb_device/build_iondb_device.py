@@ -97,8 +97,9 @@ if configuration.output_to_file:
 	try:
 		file = open(os.path.join(configuration.board_info_output_path, configuration.output_file_name), 'w')
 		file.close()
-	except IOError:
+	except IOError as e:
 		print('Failed to create build/debug output file.')
+		print(e)
 		sys.exit(1)
 
 #--------------
