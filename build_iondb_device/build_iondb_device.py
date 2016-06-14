@@ -95,7 +95,7 @@ os.makedirs('output', exist_ok=True)
 
 if configuration.output_to_file:
 	try:
-		file = open(configuration.output_file_name, 'w')
+		file = open(os.path.join(configuration.board_info_output_path, configuration.output_file_name), 'w')
 		file.close()
 	except IOError:
 		print('Failed to create build/debug output file.')
