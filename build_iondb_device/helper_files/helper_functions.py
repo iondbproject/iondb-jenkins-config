@@ -9,7 +9,7 @@ def process_output_stream(process, output_to_console):
 	file = None
 	if configuration.output_to_file:
 		try:
-			file = open(os.path.join(configuration.board_info_output_path, configuration.output_file_name), 'a')
+			file = open(os.path.join('../', configuration.board_info_output_path, configuration.output_file_name), 'a')
 		except OSError as e:
 			print('Failed to open build/debug output file.')
 			print(e)
@@ -48,7 +48,7 @@ def process_output_stream(process, output_to_console):
 def output_error_to_file(error):
 	if configuration.output_to_file:
 		try:
-			file = open(configuration.output_file_name, 'a')
+			file = open(os.path.join('../', configuration.board_info_output_path, configuration.output_file_name), 'a')
 			file.write(error)
 			file.close()
 		except OSError as e:

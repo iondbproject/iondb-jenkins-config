@@ -167,7 +167,7 @@ if len(arduino_boards) == 0:
 #--------------------
 
 # Generate Makefiles
-print('Generating Makefiles with CMake for each Arduino board...')
+print('CMake is generating Makefiles for each Arduino board...')
 
 for arduino_board in arduino_boards:
 	if CMakeBuild.do_cmake_build('../' + configuration.project_path_rel_to_build_path,
