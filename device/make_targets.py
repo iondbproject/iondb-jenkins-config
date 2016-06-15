@@ -1,22 +1,28 @@
-import subprocess
-import re
 import sys
-import helper_functions
+import re
+import subprocess
+import logging
 
 sys.path.append('../')
 import configuration
+import helper_functions
+
+logger = logging.getLogger(__name__)
+logger.addHandler(configuration.device_logger)
+logger.addHandler(configuration.console_logger)
 
 
 class MakeTargets:
 	@staticmethod
 	def get_upload_targets(dir):
-		proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE, universal_newlines=True)
+		proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+								universal_newlines=True)
 		output = proc.stdout.read()
 
 		targets = re.findall(r'^([^# \/\t\.%]*):[^=]?', output, flags=re.MULTILINE)
 		targets = [target.strip() for target in targets]
 		targets.remove('Makefile')
-		targets = [target for target in targets if "-upload" in target]
+		targets = [target for target in targets if '-upload' in target]
 
 		return targets
 
@@ -51,8 +57,7 @@ class MakeTargets:
 
 			file.close()
 		except IOError:
-			print('Failed to save make targets to a file')
-			helper_functions.output_error_to_file(str(e))
+			logger.exception('Failed to save make targets to a file')
 			return False
 
 		return True
@@ -63,8 +68,7 @@ class MakeTargets:
 			with open(file_name) as file:
 				targets = file.readlines()
 		except IOError:
-			print('Failed to read make targets from file')
-			helper_functions.output_error_to_file(str(e))
+			logger.exception('Failed to read make targets from file')
 			return []
 
 		return [target.strip() for target in targets]
@@ -81,8 +85,7 @@ class MakeTargets:
 
 			file.close()
 		except IOError:
-			print('Failed to save make targets to a file')
-			helper_functions.output_error_to_file(str(e))
+			logger.exception('Failed to save make targets to a file')
 			return False
 
 		return True
@@ -96,8 +99,7 @@ class MakeTargets:
 			with open(file_name) as file:
 				lines = file.readlines()
 		except IOError:
-			print('Failed to read make targets from file')
-			helper_functions.output_error_to_file(str(e))
+			logger.exception('Failed to read make targets from file')
 			return []
 
 		for line in lines:

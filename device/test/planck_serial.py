@@ -1,6 +1,15 @@
+import sys
 import serial
 import shutil
 import os
+import logging
+
+sys.path.append('../../')
+import configuration
+
+logger = logging.getLogger(__name__)
+logger.addHandler(configuration.device_logger)
+logger.addHandler(configuration.console_logger)
 
 # Global variables.
 opening_tag = "<suite>"

@@ -1,19 +1,24 @@
-from cmake_build import CMakeBuild
-import board_definitions as board_ids
 import sys
+import logging
+import colorama
+from colorama import Fore, Style
 import serial.tools.list_ports
 import usb
-import colorama
-import helper_functions
-from colorama import Fore, Back, Style
 from collections import namedtuple
 
-target_condition = namedtuple("target_condition", ["library", "cs_pin"])
+import board_definitions as board_ids
+from cmake_build import CMakeBuild
 
 sys.path.append('../')
 import configuration
+import helper_functions
 
+target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 colorama.init()
+
+logger = logging.getLogger(__name__)
+logger.addHandler(configuration.device_logger)
+logger.addHandler(configuration.console_logger)
 
 
 class ArduinoBoardsSerial:
@@ -25,12 +30,11 @@ class ArduinoBoardsSerial:
 			file = open(file_name, 'w')
 
 			for arduino_board in arduino_boards:
-				print(repr(arduino_board))
 				file.write(repr(arduino_board) + '\n')
 
 			file.close()
-		except IOError as e:
-			helper_functions.output_error_to_file(str(e))
+		except IOError:
+			logger.exception('Failed to save arduino boards to "' + file_name + '"')
 			return False
 
 		return True
@@ -40,9 +44,8 @@ class ArduinoBoardsSerial:
 		try:
 			with open(file_name) as file:
 				lines = file.readlines()
-		except IOError as e:
-			print('Failed to read Arduino boards from file')
-			helper_functions.output_error_to_file(str(e))
+		except IOError:
+			logger.exception('Failed to read Arduino boards from file')
 			return []
 
 		arduino_boards = []
@@ -80,18 +83,17 @@ class ArduinoBoardsSerial:
 		if len(arduino_boards) == 0:
 			return []
 
-		print('  Boards: ', end='')
 		temp_string = ''
 		for arduino_board in arduino_boards:
 			temp_string += arduino_board.board_type + ', '
 
 		temp_string = temp_string.rstrip(', ')
-		print(temp_string)
+		logger.info('  Boards: ' + temp_string)
 
 		# Get the list of ports for connected devices.
 		connected_ports = list(serial.tools.list_ports.comports())
 		if len(connected_ports) == 0:
-			print('No ports found')
+			logger.warning('No ports found')
 			return []
 
 		# Remove ports that contain specific names. For example, bluetooth and wireless
@@ -116,7 +118,7 @@ class ArduinoBoardsSerial:
 		num_connected_boards = 0
 		connected_arduino_boards = []
 		for arduino_board in arduino_boards:
-			print('Attempting to match ' + (Fore.YELLOW + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
+			logger.info('Attempting to match ' + (Fore.YELLOW + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
 			found_matching_device = False
 
 			# If the type of Arduino is unknown (uses an FTDI) then iterate through all boards with an FTDI.
@@ -159,7 +161,7 @@ class ArduinoBoardsSerial:
 						if test_processor != 'undefined':
 							arduino_board.processor = test_processor
 
-						print('  Successfully matched ' + (Fore.GREEN + test_board_type + Style.RESET_ALL) +
+						logger.info('  Successfully matched ' + (Fore.GREEN + test_board_type + Style.RESET_ALL) +
 							  ' to port ' + arduino_board.port)
 
 						if test_for_conditions:
@@ -170,7 +172,7 @@ class ArduinoBoardsSerial:
 					break
 
 			if not found_matching_device:
-				print('  Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
+				logger.warning('  Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
 			else:
 				arduino_board.id = num_connected_boards
 				connected_arduino_boards.append(arduino_board)
@@ -211,7 +213,7 @@ class ArduinoBoardsSerial:
 			board_types.append('generic')
 
 		if generic_count > 0:
-			print('An Arduino board was found but the board type is unknown. An attempt to find the type of board will '
+			logger.warning('An Arduino board was found but the board type is unknown. An attempt to find the type of board will '
 				  'be made but this could take quite awhile. It is recommended that you specify the board instead.')
 
 		return board_types
@@ -219,31 +221,31 @@ class ArduinoBoardsSerial:
 	@staticmethod
 	def is_correct_device(board_type, processor, port, build_before=True):
 		if processor == 'undefined' or processor is None:
-			print('  Trying port ' + port)
+			logger.info('  Trying port ' + port)
 			processor = None
 		else:
-			print('  Trying port ' + port + ' with ' + processor + ' processor')
+			logger.info('  Trying port ' + port + ' with ' + processor + ' processor')
 
 		compile_result = 0
 		if build_before:
-			compile_result = CMakeBuild.do_cmake_build('../', 'helper_files/test_sketch/build', board_type, port, configuration.output_debug, processor).status
+			compile_result = CMakeBuild.do_cmake_build('../', 'helper_files/test_sketch/build', board_type, port, processor).status
 
 		fast = False
 		if not build_before:
 			fast = True
 
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'helper_files/test_sketch/build', fast, configuration.output_debug).status
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'helper_files/test_sketch/build', fast).status
 		CMakeBuild.clean_build('helper_files/test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
 
 	@staticmethod
 	def condition_test(arduino_board, upload_before=True):
-		print('  Attempting condition detection...')
+		logger.info('  Attempting condition detection...')
 
 		if upload_before:
 			if not ArduinoBoardsSerial.is_correct_device(arduino_board.board_type, arduino_board.processor, arduino_board.port):
-				print('Failed to upload to device')
+				logger.error('Failed to upload to device')
 				return False
 
 		conditions = []
@@ -259,7 +261,7 @@ class ArduinoBoardsSerial:
 			for condition in configuration.conditions:
 				if str.encode(condition[0]) in linein:
 					conditions.append(target_condition(condition[0], cs_pin))
-					print('  Condition ' + condition[0] + (Fore.GREEN + ' satisfied' + Style.RESET_ALL))
+					logger.info('  Condition ' + condition[0] + (Fore.GREEN + ' satisfied' + Style.RESET_ALL))
 
 			linein = ser.readline()
 

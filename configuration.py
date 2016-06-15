@@ -1,15 +1,33 @@
-#=================================================
+import sys
+import os
+import logging
+
+#=============================
+# General user configuration
+#=============================
+
+# This path is the ABSOLUTE path of the project.
+project_path = os.path.abspath('iondb/')
+
+# Build and log output folders. This is the path where the board definitions and corresponding targets will be saved as
+# well as the logs and builds.
+pc_output_path = os.path.abspath('pc/output/')
+pc_build_path = os.path.join(pc_output_path, 'build')
+device_output_path = os.path.abspath('device/output/')
+device_build_path = os.path.join(device_output_path, 'build')
+
+# Log names
+pc_log_name = 'pc_logger.log'
+device_log_name = 'device_logger.log'
+
+# Setup loggers
+console_logger = logging.StreamHandler(sys.stdout)
+pc_logger = logging.FileHandler(os.path.join(pc_output_path, pc_log_name))
+device_logger = logging.FileHandler(os.path.join(device_output_path, device_log_name))
+
+#==============================================
 # User configuration for Arduino build system
-#=================================================
-
-# This is the path of where the output build will be.
-build_path = '../iondb/build/'
-
-# This path is the path of the project relative to where the build path is.
-project_path_rel_to_build_path = '../'
-
-# This is the path where the board definitions and corresponding targets will be saved.
-board_info_output_path = 'output/'
+#==============================================
 
 # If you have ports that you wish to exclude from scanning to speed up the board and port matching process, put the
 # name of the port or a substring of the port name here. It is case insensitive.
@@ -32,18 +50,6 @@ max_program_size_percentage = 99
 # This is the maximum allowed memory utilization for the dynamic memory on device. This does not consider stack
 # allocations and memory allocations during runtime so it is advised to not make this 100%.
 max_dynamic_memory_percentage = 80
-
-# Pipe build and debug output to a file. There will still be basic information outputted to the console.
-output_to_file = True
-
-# If you are outputting build and debug info to a file, this is the name of that file.
-output_file_name = 'build_output.txt'
-
-# Output debugging information to the console. This includes some of the output from building the test_sketch.
-output_debug = False
-
-# Output build output to the console
-output_build = False
 
 # The baud rate used by the serial monitor
 baud_rate = 115200

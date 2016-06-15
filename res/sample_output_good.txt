@@ -1,9 +1,0 @@
-<suite>
-<test>line:"-1",file:"",function:"",message:""</test>
-<test>line:"-1",file:"",function:"",message:""</test>
-<test>line:"-1",file:"",function:"",message:""</test>
-<test>line:"-1",file:"",function:"",message:""</test>
-<test>line:"-1",file:"",function:"",message:""</test>
-<test>line:"-1",file:"",function:"",message:""</test>
-<summary>total_tests:"6",total_passed:"6"</summary>
-</suite>
