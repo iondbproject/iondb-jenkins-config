@@ -28,7 +28,7 @@ for abstest_path in glob.glob(os.path.join(configuration.pc_build_path, 'test_*'
 	proc = subprocess.Popen(['chmod', '+x', abstest_path], **args)
 	helper_functions.process_output_stream(proc)
 
-	proc = subprocess.Popen([abstest_path, '|', 'tee', planck_outputfname], **args)
+	proc = subprocess.Popen([abstest_path, '|', 'tee', planck_outputfname], shell=True, **args)
 	helper_functions.process_output_stream(proc)
 
 	logger.info('Adapting {pl} -> {xl}...'.format(pl=planck_outputfname, xl=xunit_outputfname))

@@ -14,20 +14,16 @@ logger.addHandler(configuration.console_logger)
 
 def process_output_stream(process):
 	stdout = ''
-	stderr = ''
 	while process.poll() is None:
 		if process.stdout is not None:
-			stdout_line = process.stdout.readline()
-			logger.debug(stdout_line.strip())
-			stdout += stdout_line
+			stdout_line = process.stdout.readline().strip()
 
-		if process.stderr is not None:
-			stderr_line = process.stderr.readline()
-			logger.debug(stderr_line.strip())
-			stderr += stderr_line
+			if stdout_line is not '':
+				logger.debug(stdout_line)
+				stdout += stdout_line
 
 	process.wait(120)
-	return stdout, stderr
+	return stdout
 
 
 def create_directory(directory, delete_existing=False):
@@ -37,11 +33,11 @@ def create_directory(directory, delete_existing=False):
 	try:
 		os.makedirs(directory)
 	except OSError:
-		logging.exception('Could not create the directory "' + directory + '"')
+		logger.exception('Could not create the directory "' + directory + '"')
 
 
 def remove_directory(directory):
 	try:
 		shutil.rmtree(directory)
 	except OSError:
-		logger.warning('"' + directory + '" could not be removed. It may not exit.')
+		logger.warning('Could not remove ' + directory + '. It may not exist.')

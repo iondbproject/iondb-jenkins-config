@@ -19,8 +19,6 @@ import planck_serial
 sys.path.append('helper_files/')
 from helper_files import planck_xunit_adapter as pxa
 
-print('Starting test phase.')
-
 build_data = namedtuple('build_data', ['arduino', 'dir', 'targets'])
 
 logger = logging.getLogger(__name__)
@@ -32,33 +30,39 @@ result_output_dir = 'test_results'
 
 
 def upload_and_read_serial(target_name, arduino_build, output_dir):
-	CMakeBuild.execute_make_target(target_name, configuration.device_build_path + arduino_build[0].dir, False)
-	planck_serial.parse_serial(output_dir, arduino_build[0].arduino.port, print_info=True,
-							   baud_rate=configuration.baud_rate, target_name=target_name)
+	logger.info('Running ' + target_name)
+	CMakeBuild.execute_make_target(target_name, os.path.join(configuration.device_build_path, arduino_build[0].dir),
+								   False)
+	planck_serial.parse_serial(output_dir, arduino_build[0].arduino.port, baud_rate=configuration.baud_rate,
+							   target_name=target_name)
+	logger.info('Finished running ' + target_name)
 	arduino_build[1] = True
 
+logger.info('Starting test phase.')
 
 # Note: The list of ArduinoBoards are already sorted by ID.
-arduino_boards = ArduinoBoardsSerial.load_arduino_boards(configuration.device_output_path + 'connected_arduino_boards.txt')
-arduino_board_targets = MakeTargets.load_board_make_targets(configuration.device_output_path + 'make_board_targets.txt')
+arduino_boards = ArduinoBoardsSerial.load_arduino_boards(os.path.join(configuration.device_output_path,
+																	  'connected_arduino_boards.txt'))
+arduino_board_targets = MakeTargets.load_board_make_targets(os.path.join(configuration.device_output_path,
+																		 'make_board_targets.txt'))
 arduino_builds = []
 
 # Match the Arduino boards to their corresponding builds and targets
 for entry in os.listdir(configuration.device_build_path):
-	if os.path.isdir(configuration.device_build_path + entry):
+	if os.path.isdir(os.path.join(configuration.device_build_path, entry)):
 		id = int(entry.split('_')[-1])
 		arduino_builds.append([build_data(arduino_boards[id], entry, arduino_board_targets[id].targets), True])
 
 if len(arduino_builds) == 0:
-	print('No device builds found')
+	logger.error('No device builds found')
 	sys.exit(1)
 
-upload_targets = MakeTargets.load_all_make_targets(configuration.device_output_path + 'all_upload_targets.txt')
+upload_targets = MakeTargets.load_all_make_targets(os.path.join(configuration.device_output_path, 'all_upload_targets.txt'))
 
 try:
 	shutil.rmtree(result_output_dir)
 except FileNotFoundError:
-	print(result_output_dir + " directory didn't exist, no remove")
+	logger.warning(result_output_dir + " directory didn't exist, no remove")
 os.makedirs(result_output_dir, exist_ok=True)
 
 # Perform uploading and job distribution management
@@ -74,6 +78,7 @@ while len(upload_targets) > 0:
 					if upload_target == arduino_target:
 						args = {'target_name': upload_target, 'arduino_build': arduino_build, 'output_dir': result_output_dir}
 						thread = threading.Thread(target=upload_and_read_serial, kwargs=args)
+						thread.setName(arduino_build[0].arduino.board_type + ', ' + upload_target)
 						testjobs.append(thread)
 						arduino_build[1] = False
 						thread.start()
@@ -97,7 +102,7 @@ planckserial_filename_regex = planck_serial.output_filename_syntax.replace('{tar
 for test_file in os.listdir('.'):
 	match_obj = re.search(planckserial_filename_regex, test_file)
 	if not match_obj:
-		print(test_file + ' did not conform to the expected output filename format')
+		logger.error(test_file + ' did not conform to the expected output filename format')
 		continue
 
 	test_info = match_obj.groupdict()
@@ -108,4 +113,4 @@ for test_file in os.listdir('.'):
 	with open(test_file, 'r+') as planck_file, open(xunit_outputfname, 'w+') as xunit_file:
 		pxa.PlanckAdapter(test_info['target_name'], planck_file, xunit_file).adapt_planck_file()
 
-print('Successfully completed test process.')
+logger.info('Successfully completed test process.')

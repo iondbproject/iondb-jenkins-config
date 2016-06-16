@@ -11,7 +11,7 @@ import configuration
 sys.path.append('helper_files/')
 import helper_functions
 
-build_result = namedtuple('build_result', ['status', 'stdout', 'stderr'])
+build_result = namedtuple('build_result', ['status', 'output'])
 
 logger = logging.getLogger(__name__)
 logger.addHandler(configuration.device_logger)
@@ -44,9 +44,9 @@ class CMakeBuild:
 
 		proc = subprocess.Popen(command, cwd=build_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
 								universal_newlines=True)
-		stdout, stderr = helper_functions.process_output_stream(proc)
+		output = helper_functions.process_output_stream(proc)
 
-		return build_result(proc.returncode, stdout, stderr)
+		return build_result(proc.returncode, output)
 
 	@staticmethod
 	def execute_make_target(target_name, build_dir, fast):
@@ -54,7 +54,7 @@ class CMakeBuild:
 			target_name += '/fast'
 
 		proc = subprocess.Popen(['make', target_name], cwd=build_dir, stdout=subprocess.PIPE, 
-		                        stderr=subprocess.PIPE, universal_newlines=True)
-		stdout, stderr = helper_functions.process_output_stream(proc)
+		                        stderr=subprocess.STDOUT, universal_newlines=True)
+		output = helper_functions.process_output_stream(proc)
 
-		return build_result(proc.returncode, stdout, stderr)
+		return build_result(proc.returncode, output)

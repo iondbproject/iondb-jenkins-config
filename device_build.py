@@ -84,6 +84,8 @@ if len(ports) > 0 and len(ports) != len(board_types):
 	logger.error('There are more ports specified than there are boards')
 	sys.exit(1)
 
+logger.info('Starting device build')
+
 #--------------------------------------------------------------------------------------------
 # Match ports to devices if the ports are not specified and check conditions for each device
 #--------------------------------------------------------------------------------------------
@@ -95,7 +97,7 @@ if len(ports) == 0:
 	arduino_boards = ArduinoBoardsSerial.get_connected_arduino_boards(board_types, processors, configuration.test_for_conditions)
 
 	if not ArduinoBoardsSerial.save_arduino_boards(arduino_boards, os.path.join(configuration.device_output_path, 'connected_arduino_boards.txt')):
-		logger.error("Failed to save Arduino boards to a file")
+		logger.error('Failed to save Arduino boards to a file')
 		sys.exit(1)
 else:
 	for i in range(len(board_types)):
@@ -127,10 +129,10 @@ for arduino_board in arduino_boards:
 								 arduino_board.port,
 								 arduino_board.processor,
 								 arduino_board.conditions).status != 0:
-		logger.error('  Failed building Makefiles with CMake for ' + arduino_board.board_type)
+		logger.error('Failed building Makefiles with CMake for ' + arduino_board.board_type)
 		sys.exit(1)
 
-	logger.info('  Successfully built Makefiles for ' + arduino_board.board_type)
+	logger.info('Successfully built Makefiles for ' + arduino_board.board_type)
 
 # Get upload targets from Makefiles
 upload_targets = MakeTargets.get_upload_targets(os.path.join(configuration.device_build_path,
@@ -152,20 +154,20 @@ for arduino_board in arduino_boards:
 		build_result = CMakeBuild.execute_make_target(upload_target.rsplit('-', 1)[0], build_path, False)
 
 		if build_result.status != 0:
-			logger.error('  Failed to build target ' + (Fore.RED + upload_target + Style.RESET_ALL))
+			logger.error('Failed to build target ' + (Fore.RED + upload_target + Style.RESET_ALL))
 			builds_failed = True
 		else:
-			logger.info('  Successfully built target ' + (Fore.GREEN + upload_target + Style.RESET_ALL))
+			logger.info('Successfully built target ' + (Fore.GREEN + upload_target + Style.RESET_ALL))
 
-			if MakeTargets.check_target_compatibility(build_result.stdout, arduino_board):
-				logger.info('    Target will run on this device')
+			if MakeTargets.check_target_compatibility(build_result.output, arduino_board):
+				logger.info('Target will run on this device')
 				board_targets.append(upload_target)
 				upload_targets[upload_target] += 1
 
 	arduino_board_targets.append(BoardTargets(arduino_board.id, board_targets))
 
 MakeTargets.save_board_make_targets(arduino_board_targets,
-									configuration.device_output_path + 'make_board_targets.txt')
+									os.path.join(configuration.device_output_path, 'make_board_targets.txt'))
 
 no_compatible_devices = False
 if 0 in upload_targets.values():
@@ -173,7 +175,7 @@ if 0 in upload_targets.values():
 	upload_targets = {k: v for k, v in upload_targets.items() if v != 0}
 
 MakeTargets.save_all_make_targets(list(upload_targets.keys()),
-								  configuration.device_output_path + 'all_upload_targets.txt')
+								  os.path.join(configuration.device_output_path, 'all_upload_targets.txt'))
 
 if builds_failed:
 	logger.error('There are targets that failed to build.')

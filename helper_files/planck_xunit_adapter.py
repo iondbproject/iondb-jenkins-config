@@ -96,7 +96,7 @@ class PlanckAdapter:
 
 			if case['line'] != '-1': #if fail
 				self.write_xunit_tag('failure')
-				print('Failed in function "{func}", at {filen}:{line}: {msg}\n'.format(func=case['function'],
+				logger.error('Failed in function "{func}", at {filen}:{line}: {msg}\n'.format(func=case['function'],
 																					   filen=case['file'],
 																					   line=case['line'],
 																					   msg=case['message']))

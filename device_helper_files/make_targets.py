@@ -14,7 +14,7 @@ logger.addHandler(configuration.console_logger)
 class MakeTargets:
 	@staticmethod
 	def get_upload_targets(dir):
-		proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+		proc = subprocess.Popen(['make', '-qp'], cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
 								universal_newlines=True)
 		output = proc.stdout.read()
 

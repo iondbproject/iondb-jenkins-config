@@ -21,6 +21,7 @@ target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 colorama.init()
 
 logger = logging.getLogger(__name__)
+logging.LogRecord
 logger.addHandler(configuration.device_logger)
 logger.addHandler(configuration.console_logger)
 
@@ -92,7 +93,7 @@ class ArduinoBoardsSerial:
 			temp_string += arduino_board.board_type + ', '
 
 		temp_string = temp_string.rstrip(', ')
-		logger.info('  Boards: ' + temp_string)
+		logger.info('Boards: ' + temp_string)
 
 		# Get the list of ports for connected devices.
 		connected_ports = list(serial.tools.list_ports.comports())
@@ -165,7 +166,7 @@ class ArduinoBoardsSerial:
 						if test_processor != 'undefined':
 							arduino_board.processor = test_processor
 
-						logger.info('  Successfully matched ' + (Fore.GREEN + test_board_type + Style.RESET_ALL) +
+						logger.info('Successfully matched ' + (Fore.GREEN + test_board_type + Style.RESET_ALL) +
 							  ' to port ' + arduino_board.port)
 
 						if test_for_conditions:
@@ -225,28 +226,27 @@ class ArduinoBoardsSerial:
 	@staticmethod
 	def is_correct_device(board_type, processor, port, build_before=True):
 		if processor == 'undefined' or processor is None:
-			logger.info('  Trying port ' + port)
+			logger.info('Trying port ' + port)
 			processor = None
 		else:
-			logger.info('  Trying port ' + port + ' with ' + processor + ' processor')
+			logger.info('Trying port ' + port + ' with ' + processor + ' processor')
 
 		compile_result = 0
 		if build_before:
-			compile_result = CMakeBuild.do_cmake_build(configuration.project_path, configuration.device_build_path,
-													   board_type, port, processor).status
+			compile_result = CMakeBuild.do_cmake_build(os.path.abspath('device_helper_files/test_sketch'), 'test_sketch/build', board_type, port, processor).status
 
 		fast = False
 		if not build_before:
 			fast = True
 
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', configuration.device_build_path, fast).status
-		helper_functions.remove_directory(configuration.device_build_path)
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'test_sketch/build', fast).status
+		helper_functions.remove_directory('test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
 
 	@staticmethod
 	def condition_test(arduino_board, upload_before=True):
-		logger.info('  Attempting condition detection...')
+		logger.info('Attempting condition detection...')
 
 		if upload_before:
 			if not ArduinoBoardsSerial.is_correct_device(arduino_board.board_type, arduino_board.processor, arduino_board.port):
@@ -266,7 +266,7 @@ class ArduinoBoardsSerial:
 			for condition in configuration.conditions:
 				if str.encode(condition[0]) in linein:
 					conditions.append(target_condition(condition[0], cs_pin))
-					logger.info('  Condition ' + condition[0] + (Fore.GREEN + ' satisfied' + Style.RESET_ALL))
+					logger.info('Condition ' + condition[0] + (Fore.GREEN + ' satisfied' + Style.RESET_ALL))
 
 			linein = ser.readline()
 
