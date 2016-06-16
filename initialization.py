@@ -49,14 +49,12 @@ if proc.returncode != 0:
 #------------------------------
 
 try:
-	os.makedirs(configuration.pc_output_path)
-	os.makedirs(os.path.join(configuration.pc_build_path))
+	os.makedirs(configuration.pc_build_path)
 except OSError:
 	logger.warning('Failed to create pc output directory. It probably already exits.')
 
 try:
-	os.makedirs(configuration.device_output_path)
-	os.makedirs(os.path.join(configuration.pc_build_path))
+	os.makedirs(configuration.pc_build_path)
 except OSError:
 	logger.warning('Failed to create device output directory. It probably already exits.')
 
