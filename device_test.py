@@ -32,21 +32,20 @@ result_output_dir = 'test_results'
 
 
 def upload_and_read_serial(target_name, arduino_build, output_dir):
-	CMakeBuild.execute_make_target(target_name, configuration.build_path + arduino_build[0].dir,
-								   False, configuration.output_build)
+	CMakeBuild.execute_make_target(target_name, configuration.device_build_path + arduino_build[0].dir, False)
 	planck_serial.parse_serial(output_dir, arduino_build[0].arduino.port, print_info=True,
 							   baud_rate=configuration.baud_rate, target_name=target_name)
 	arduino_build[1] = True
 
 
 # Note: The list of ArduinoBoards are already sorted by ID.
-arduino_boards = ArduinoBoardsSerial.load_arduino_boards('../build_iondb_device/' + configuration.board_info_output_path + 'connected_arduino_boards.txt')
-arduino_board_targets = MakeTargets.load_board_make_targets('../build_iondb_device/' + configuration.board_info_output_path + 'make_board_targets.txt')
+arduino_boards = ArduinoBoardsSerial.load_arduino_boards(configuration.device_output_path + 'connected_arduino_boards.txt')
+arduino_board_targets = MakeTargets.load_board_make_targets(configuration.device_output_path + 'make_board_targets.txt')
 arduino_builds = []
 
 # Match the Arduino boards to their corresponding builds and targets
-for entry in os.listdir(configuration.build_path):
-	if os.path.isdir(configuration.build_path + entry):
+for entry in os.listdir(configuration.device_build_path):
+	if os.path.isdir(configuration.device_build_path + entry):
 		id = int(entry.split('_')[-1])
 		arduino_builds.append([build_data(arduino_boards[id], entry, arduino_board_targets[id].targets), True])
 
@@ -54,7 +53,7 @@ if len(arduino_builds) == 0:
 	print('No device builds found')
 	sys.exit(1)
 
-upload_targets = MakeTargets.load_all_make_targets('../build_iondb_device/' + configuration.board_info_output_path + 'all_upload_targets.txt')
+upload_targets = MakeTargets.load_all_make_targets(configuration.device_output_path + 'all_upload_targets.txt')
 
 try:
 	shutil.rmtree(result_output_dir)

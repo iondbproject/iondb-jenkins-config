@@ -15,15 +15,15 @@ logger.addHandler(configuration.console_logger)
 
 proc = subprocess.Popen(['cmake', configuration.project_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
 						universal_newlines=True)
-helper_functions.process_output_stream(proc, configuration.output_build)
+helper_functions.process_output_stream(proc)
 
 if proc.returncode != 0:
 	print('PC build failed')
 	sys.exit(1)
 
-proc = subprocess.Popen(['make', 'all'], cwd=configuration.pc_output + '/build', stdout=subprocess.PIPE,
+proc = subprocess.Popen(['make', 'all'], cwd=configuration.pc_build_path, stdout=subprocess.PIPE,
 						stderr=subprocess.STDOUT, universal_newlines=True)
-helper_functions.process_output_stream(proc, configuration.output_build)
+helper_functions.process_output_stream(proc)
 
 if proc.returncode != 0:
 	print('Running tests failed')

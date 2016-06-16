@@ -8,7 +8,7 @@ from collections import namedtuple
 sys.path.append('../')
 import configuration
 
-sys.path.append('../helper_files/')
+sys.path.append('helper_files/')
 import helper_functions
 
 build_result = namedtuple('build_result', ['status', 'stdout', 'stderr'])
@@ -21,10 +21,7 @@ logger.addHandler(configuration.console_logger)
 class CMakeBuild:
 	@staticmethod
 	def do_cmake_build(abs_project_path, build_dir, board_type, port, processor=None, target_conditions=None):
-		try:
-			shutil.rmtree(build_dir)
-		except OSError:
-			logger.exception('Failed to remove "' + build_dir + '"')
+		helper_functions.remove_directory(build_dir)
 
 		try:
 			os.makedirs(build_dir)

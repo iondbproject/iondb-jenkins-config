@@ -94,7 +94,7 @@ if len(ports) == 0:
 	logger.info('Finding Arduino boards and their corresponding ports')
 	arduino_boards = ArduinoBoardsSerial.get_connected_arduino_boards(board_types, processors, configuration.test_for_conditions)
 
-	if not ArduinoBoardsSerial.save_arduino_boards(arduino_boards, configuration.device_output_path + 'connected_arduino_boards.txt'):
+	if not ArduinoBoardsSerial.save_arduino_boards(arduino_boards, os.path.join(configuration.device_output_path, 'connected_arduino_boards.txt')):
 		logger.error("Failed to save Arduino boards to a file")
 		sys.exit(1)
 else:
@@ -149,9 +149,7 @@ for arduino_board in arduino_boards:
 
 	for upload_target in upload_targets.keys():
 		build_path = os.path.join(configuration.device_build_path, arduino_board.board_type + '_' + str(arduino_board.id))
-		build_result = CMakeBuild.execute_make_target(upload_target.rsplit('-', 1)[0],
-													  build_path,
-													  False)
+		build_result = CMakeBuild.execute_make_target(upload_target.rsplit('-', 1)[0], build_path, False)
 
 		if build_result.status != 0:
 			logger.error('  Failed to build target ' + (Fore.RED + upload_target + Style.RESET_ALL))

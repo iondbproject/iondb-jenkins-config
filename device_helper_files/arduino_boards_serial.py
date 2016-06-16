@@ -14,6 +14,9 @@ from cmake_build import CMakeBuild
 sys.path.append('../')
 import configuration
 
+sys.path.append('helper_files/')
+import helper_functions
+
 target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 colorama.init()
 
@@ -229,14 +232,15 @@ class ArduinoBoardsSerial:
 
 		compile_result = 0
 		if build_before:
-			compile_result = CMakeBuild.do_cmake_build('../', 'helper_files/test_sketch/build', board_type, port, processor).status
+			compile_result = CMakeBuild.do_cmake_build(configuration.project_path, configuration.device_build_path,
+													   board_type, port, processor).status
 
 		fast = False
 		if not build_before:
 			fast = True
 
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'helper_files/test_sketch/build', fast).status
-		CMakeBuild.clean_build('helper_files/test_sketch/build')
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', configuration.device_build_path, fast).status
+		helper_functions.remove_directory(configuration.device_build_path)
 
 		return compile_result == 0 and upload_result == 0
 

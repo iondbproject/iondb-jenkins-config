@@ -18,10 +18,10 @@ logger.addHandler(configuration.console_logger)
 
 logger.info('Starting test phase.')
 
-for abstest_path in glob.glob(os.path.join(configuration.pc_output, 'build', 'test_*')):
+for abstest_path in glob.glob(os.path.join(configuration.pc_build_path, 'test_*')):
 	test_exec = os.path.basename(abstest_path)
-	planck_outputfname = os.path.join(configuration.pc_output, 'planckunit_{testname}_output.txt').format(testname=test_exec)
-	xunit_outputfname = os.path.join(configuration.pc_output, 'xunit_{testname}_output.txt').format(testname=test_exec)
+	planck_outputfname = os.path.join(configuration.pc_output_path, 'planckunit_{testname}_output.txt').format(testname=test_exec)
+	xunit_outputfname = os.path.join(configuration.pc_output_path, 'xunit_{testname}_output.txt').format(testname=test_exec)
 
 	args = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
 

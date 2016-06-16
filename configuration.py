@@ -21,9 +21,13 @@ pc_log_name = 'pc_logger.log'
 device_log_name = 'device_logger.log'
 
 # Setup loggers
+logging.getLogger().setLevel(logging.DEBUG)
 console_logger = logging.StreamHandler(sys.stdout)
+console_logger.setLevel(logging.INFO)
 pc_logger = logging.FileHandler(os.path.join(pc_output_path, pc_log_name))
+pc_logger.setLevel(logging.DEBUG)
 device_logger = logging.FileHandler(os.path.join(device_output_path, device_log_name))
+device_logger.setLevel(logging.DEBUG)
 
 #==============================================
 # User configuration for Arduino build system
