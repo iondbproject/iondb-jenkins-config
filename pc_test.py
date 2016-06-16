@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import sys
-import os.path
 import glob
-import subprocess
 import logging
+import os.path
+import subprocess
+import sys
 
-sys.path.append('../../')
 import configuration
+
+sys.path.append('helper_files/')
 import helper_functions
 import planck_xunit_adapter as pxa
 

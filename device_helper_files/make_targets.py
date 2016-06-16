@@ -1,11 +1,10 @@
-import sys
+import logging
 import re
 import subprocess
-import logging
+import sys
 
 sys.path.append('../')
 import configuration
-import helper_functions
 
 logger = logging.getLogger(__name__)
 logger.addHandler(configuration.device_logger)

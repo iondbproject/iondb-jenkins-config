@@ -1,10 +1,12 @@
-import sys
+import logging
 import os
 import shutil
 import subprocess
-import logging
+import sys
 
 import configuration
+
+sys.path.append('helper_files/')
 import helper_functions
 
 logger = logging.getLogger(__name__)

@@ -4,7 +4,7 @@ import shutil
 import os
 import logging
 
-sys.path.append('../../')
+sys.path.append('../')
 import configuration
 
 logger = logging.getLogger(__name__)

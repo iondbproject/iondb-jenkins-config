@@ -3,6 +3,7 @@ import os
 import shutil
 import logging
 
+sys.path.append('../')
 import configuration
 
 logger = logging.getLogger(__name__)

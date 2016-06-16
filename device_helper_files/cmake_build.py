@@ -1,12 +1,14 @@
-import sys
+import logging
 import os
 import shutil
 import subprocess
-import logging
+import sys
 from collections import namedtuple
 
 sys.path.append('../')
 import configuration
+
+sys.path.append('../helper_files/')
 import helper_functions
 
 build_result = namedtuple('build_result', ['status', 'stdout', 'stderr'])

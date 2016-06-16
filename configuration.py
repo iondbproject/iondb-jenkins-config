@@ -11,9 +11,9 @@ project_path = os.path.abspath('iondb/')
 
 # Build and log output folders. This is the path where the board definitions and corresponding targets will be saved as
 # well as the logs and builds.
-pc_output_path = os.path.abspath('pc/output/')
+pc_output_path = os.path.abspath('pc_output/')
 pc_build_path = os.path.join(pc_output_path, 'build')
-device_output_path = os.path.abspath('device/output/')
+device_output_path = os.path.abspath('device_output/')
 device_build_path = os.path.join(device_output_path, 'build')
 
 # Log names

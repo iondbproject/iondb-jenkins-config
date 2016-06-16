@@ -1,23 +1,23 @@
 #!/usr/bin/python
-import sys
+import logging
 import os
 import re
 import shutil
+import sys
 import threading
 import time
-import logging
 from collections import namedtuple
 
-import planck_serial
+import configuration
 
-sys.path.append('../')
+sys.path.append('device_helper_files/')
 from cmake_build import CMakeBuild
 from arduino_boards_serial import ArduinoBoardsSerial
 from make_targets import MakeTargets
+import planck_serial
 
-sys.path.append('../../')
-import configuration
-import planck_xunit_adapter as pxa
+sys.path.append('helper_files/')
+from helper_files import planck_xunit_adapter as pxa
 
 print('Starting test phase.')
 

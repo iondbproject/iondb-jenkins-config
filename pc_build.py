@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import sys
-import subprocess
 import logging
+import subprocess
+import sys
 
-sys.path.append('../../')
 import configuration
+
+sys.path.append('helper_files/')
 import helper_functions
 
 logger = logging.getLogger(__name__)

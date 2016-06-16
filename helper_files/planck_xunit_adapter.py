@@ -4,6 +4,7 @@ import re
 import string
 import logging
 
+sys.path.append('../')
 import configuration
 
 logger = logging.getLogger(__name__)

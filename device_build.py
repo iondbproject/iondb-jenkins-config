@@ -1,18 +1,16 @@
-#!/usr/bin/python
-import sys
-import os
+#!/usr/bin/env python3
 import getopt
 import logging
+import os
+import sys
 from colorama import Fore, Style
 
-sys.path.append('../')
+import configuration
+
+sys.path.append('device_helper_files/')
 from arduino_boards_serial import ArduinoBoardsSerial, ArduinoBoard
 from cmake_build import CMakeBuild
 from make_targets import MakeTargets, BoardTargets
-import helper_functions
-
-sys.path.append('../../')
-import configuration
 
 logger = logging.getLogger(__name__)
 logger.addHandler(configuration.device_logger)

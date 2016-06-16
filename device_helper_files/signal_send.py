@@ -1,5 +1,4 @@
 #!python3
-
 import serial
 import sys
 import time

@@ -1,9 +1,11 @@
-import sys
+#!/usr/bin/env python3
 import logging
+import os
+import sys
 import colorama
-from colorama import Fore, Style
 import serial.tools.list_ports
 import usb
+from colorama import Fore, Style
 from collections import namedtuple
 
 import board_definitions as board_ids
@@ -11,7 +13,6 @@ from cmake_build import CMakeBuild
 
 sys.path.append('../')
 import configuration
-import helper_functions
 
 target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 colorama.init()
