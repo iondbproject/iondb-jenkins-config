@@ -20,7 +20,7 @@ def process_output_stream(process):
 
 			if stdout_line is not '':
 				logger.debug(stdout_line)
-				stdout += stdout_line
+				stdout += stdout_line + '\n'
 
 	process.wait(120)
 	return stdout
