@@ -102,7 +102,7 @@ class PlanckAdapter:
 																					   msg=case['message']))
 				self.write_xunit_tag('/failure')
 
-				self.write_xunit_tag('/testcase')
+			self.write_xunit_tag('/testcase')
 
 		self.write_xunit_tag('/testsuite')
 		self.write_xunit_tag('/testrun')
