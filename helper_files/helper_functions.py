@@ -14,21 +14,22 @@ logger.addHandler(configuration.console_logger)
 
 def process_output_stream(process):
 	stdout = ''
-	empty_count = 0
-	for line in iter(process.stdout.readline, ''):
-		if empty_count > configuration.empty_threshold:
-			break
+	while process.poll() is None:
+		stdout_line = process.stdout.readline().strip()
 
-		stdout_line = line.strip()
+		if stdout_line != '':
+			logger.debug(stdout_line)
+			stdout += stdout_line + '\n'
+
+	empty_count = 0
+	while empty_count < configuration.empty_threshold:
+		stdout_line = process.stdout.readline().strip()
 
 		if stdout_line != '':
 			logger.debug(stdout_line)
 			stdout += stdout_line + '\n'
 		else:
 			empty_count += 1
-
-	if process.poll() is None:
-		logger.critical("Exit early")
 
 	return stdout
 
