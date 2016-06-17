@@ -72,7 +72,8 @@ def output_test(ser, suite_no, output_folder, target_name):
 			linein = ser.readline()
 			# Consume garbage until we see the first <suite> tag
 			while b'<suite>' not in linein and linein != b'':
-				logger.warning('Threw away: ' + linein)
+				logger.warning('Threw away: ')
+				logger.warning(linein)
 				linein = ser.readline()
 
 			if linein != b'':
@@ -122,7 +123,8 @@ def output_test(ser, suite_no, output_folder, target_name):
 
 		# Cancel and give an error if a non-ASCII character is ever found in the data.
 		except UnicodeDecodeError:
-			logger.error("Line: " + linein)
+			logger.error("Line: ")
+			logger.error(linein)
 			raise PlanckAbortError(gen_error_tag("Non-ASCII characters found in output. Please check the source text and baud rate."))
 
 	except PlanckAbortError as pae:
