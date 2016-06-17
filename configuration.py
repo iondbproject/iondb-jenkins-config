@@ -35,6 +35,9 @@ device_logger = logging.FileHandler(os.path.join(device_output_path, device_log_
 device_logger.setLevel(logging.DEBUG)
 device_logger.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(threadName)s: %(message)s'))
 
+# How many empty strings do we need to see before we consider a subprocess to be terminated.
+empty_threshold = 10
+
 #==============================================
 # User configuration for Arduino build system
 #==============================================
@@ -42,6 +45,9 @@ device_logger.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(na
 # If you have ports that you wish to exclude from scanning to speed up the board and port matching process, put the
 # name of the port or a substring of the port name here. It is case insensitive.
 excluded_ports = ['bluetooth', 'wireless']
+
+# If you have device types that you wish to exclude from being found, add them here
+excluded_devices = ['leonardo']
 
 # Set this to True if you wish to specify build conditions that will be checked to exclude targets that will not
 # run on the device if the conditions are not met. For example, you may wish to see if there is an SD card in the

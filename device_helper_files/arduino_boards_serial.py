@@ -122,7 +122,8 @@ class ArduinoBoardsSerial:
 		num_connected_boards = 0
 		connected_arduino_boards = []
 		for arduino_board in arduino_boards:
-			logger.info('Attempting to match ' + (Fore.YELLOW + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
+			logger.info('Attempting to match ' + (Fore.YELLOW + arduino_board.board_type + Style.RESET_ALL) +
+						' to a port')
 			found_matching_device = False
 
 			# If the type of Arduino is unknown (uses an FTDI) then iterate through all boards with an FTDI.
@@ -145,7 +146,8 @@ class ArduinoBoardsSerial:
 						build_before_upload = True
 
 						for connected_port in connected_ports:
-							if ArduinoBoardsSerial.is_correct_device(test_board_type, test_processor, connected_port.device, build_before_upload):
+							if ArduinoBoardsSerial.is_correct_device(test_board_type, test_processor,
+																	 connected_port.device, build_before_upload):
 								arduino_board.port = connected_port.device
 								connected_ports.remove(connected_port)
 								found_matching_device = True
@@ -176,8 +178,9 @@ class ArduinoBoardsSerial:
 					break
 
 			if not found_matching_device:
-				logger.warning('  Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) + ' to a port')
-			else:
+				logger.warning('  Failed to match ' + (Fore.RED + arduino_board.board_type + Style.RESET_ALL) +
+							   ' to a port')
+			elif arduino_board.board_type not in configuration.excluded_devices:
 				arduino_board.id = num_connected_boards
 				connected_arduino_boards.append(arduino_board)
 				num_connected_boards += 1
@@ -200,7 +203,8 @@ class ArduinoBoardsSerial:
 					for id_pair in id_pairs:
 						if device.idVendor == id_pair.vid:
 							if device.idProduct == id_pair.pid:
-								board_types.append(board_type)
+								if board_type not in configuration.excluded_devices:
+									board_types.append(board_type)
 								found_same_pid = True
 								break
 
@@ -217,8 +221,9 @@ class ArduinoBoardsSerial:
 			board_types.append('generic')
 
 		if generic_count > 0:
-			logger.warning('An Arduino board was found but the board type is unknown. An attempt to find the type of board will '
-				  'be made but this could take quite awhile. It is recommended that you specify the board instead.')
+			logger.warning('An Arduino board was found but the board type is unknown. An attempt to find the type of'
+						   'board will be made but this could take quite awhile. It is recommended that you specify'
+						   'the board instead.')
 
 		return board_types
 
@@ -232,13 +237,16 @@ class ArduinoBoardsSerial:
 
 		compile_result = 0
 		if build_before:
-			compile_result = CMakeBuild.do_cmake_build(os.path.abspath('device_helper_files/test_sketch'), 'device_helper_files/test_sketch/build', board_type, port, processor).status
+			compile_result = CMakeBuild.do_cmake_build(os.path.abspath('device_helper_files/test_sketch'),
+													   'device_helper_files/test_sketch/build',
+													   board_type, port, processor).status
 
 		fast = False
 		if not build_before:
 			fast = True
 
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'device_helper_files/test_sketch/build', fast).status
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'device_helper_files/test_sketch/build',
+													   fast).status
 		helper_functions.remove_directory('device_helper_files/test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
@@ -248,7 +256,8 @@ class ArduinoBoardsSerial:
 		logger.info('Attempting condition detection...')
 
 		if upload_before:
-			if not ArduinoBoardsSerial.is_correct_device(arduino_board.board_type, arduino_board.processor, arduino_board.port):
+			if not ArduinoBoardsSerial.is_correct_device(arduino_board.board_type, arduino_board.processor,
+														 arduino_board.port):
 				logger.error('Failed to upload to device')
 				return False
 
