@@ -26,7 +26,7 @@ except OSError:
 arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
 
 proc = subprocess.Popen(['git', 'clone', '--depth=1', 'https://github.com/iondbproject/iondb.git', 'iondb',
-						 '--recursive', '-b', 'development'], **arguments)
+						 '--recursive', '-b', 'coverage_planck-close'], **arguments)
 helper_functions.process_output_stream(proc)
 if proc.returncode != 0:
 	logger.error('Failed to clone IonDB repository')
