@@ -16,7 +16,7 @@ logger.addHandler(configuration.console_logger)
 logger.info('Starting pc build')
 
 proc = subprocess.Popen(['cmake', configuration.project_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-						universal_newlines=True)
+						universal_newlines=True, cwd=configuration.pc_build_path)
 helper_functions.process_output_stream(proc)
 
 if proc.returncode != 0:
@@ -28,7 +28,7 @@ proc = subprocess.Popen(['make', 'all'], cwd=configuration.pc_build_path, stdout
 helper_functions.process_output_stream(proc)
 
 if proc.returncode != 0:
-	logger.error('Some or all tests failed')
+	logger.error('Some or all tests failed to compile')
 	sys.exit(0)
 
 logger.info('Build process finished')

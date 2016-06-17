@@ -18,7 +18,7 @@ logger.addHandler(configuration.console_logger)
 
 logger.info('Starting test phase.')
 
-for abstest_path in glob.glob(os.path.join(configuration.pc_build_path, 'test_*')):
+for abstest_path in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test_*')):
 	test_exec = os.path.basename(abstest_path)
 	planck_outputfname = os.path.join(configuration.pc_output_path, 'planckunit_{testname}_output.txt').format(testname=test_exec)
 	xunit_outputfname = os.path.join(configuration.pc_output_path, 'xunit_{testname}_output.txt').format(testname=test_exec)
@@ -28,8 +28,10 @@ for abstest_path in glob.glob(os.path.join(configuration.pc_build_path, 'test_*'
 	proc = subprocess.Popen(['chmod', '+x', abstest_path], **args)
 	helper_functions.process_output_stream(proc)
 
-	proc = subprocess.Popen([abstest_path, '|', 'tee', planck_outputfname], shell=True, **args)
-	helper_functions.process_output_stream(proc)
+	proc = subprocess.Popen([abstest_path], cwd=os.path.join(configuration.pc_build_path, 'bin'), **args)
+	output = helper_functions.process_output_stream(proc)
+	with open(planck_outputfname, 'w') as planck_output:
+		planck_output.write(output)
 
 	logger.info('Adapting {pl} -> {xl}...'.format(pl=planck_outputfname, xl=xunit_outputfname))
 	with open(planck_outputfname, 'r+') as planck_file, open(xunit_outputfname, 'w+') as xunit_file:

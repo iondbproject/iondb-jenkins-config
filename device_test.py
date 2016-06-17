@@ -25,9 +25,6 @@ logger = logging.getLogger(__name__)
 logger.addHandler(configuration.device_logger)
 logger.addHandler(configuration.console_logger)
 
-# GLOBALS
-result_output_dir = 'test_results'
-
 
 def upload_and_read_serial(target_name, arduino_build, output_dir):
 	logger.info('Running ' + target_name)
@@ -59,12 +56,6 @@ if len(arduino_builds) == 0:
 
 upload_targets = MakeTargets.load_all_make_targets(os.path.join(configuration.device_output_path, 'all_upload_targets.txt'))
 
-try:
-	shutil.rmtree(result_output_dir)
-except FileNotFoundError:
-	logger.warning(result_output_dir + " directory didn't exist, no remove")
-os.makedirs(result_output_dir, exist_ok=True)
-
 # Perform uploading and job distribution management
 # List of threads that we've executed.
 testjobs = []
@@ -76,7 +67,7 @@ while len(upload_targets) > 0:
 			for upload_target in upload_targets:
 				for arduino_target in arduino_build[0].targets:
 					if upload_target == arduino_target:
-						args = {'target_name': upload_target, 'arduino_build': arduino_build, 'output_dir': result_output_dir}
+						args = {'target_name': upload_target, 'arduino_build': arduino_build, 'output_dir': configuration.device_output_path}
 						thread = threading.Thread(target=upload_and_read_serial, kwargs=args)
 						thread.setName(arduino_build[0].arduino.board_type + ', ' + upload_target)
 						testjobs.append(thread)
@@ -97,9 +88,8 @@ for job in testjobs:
 	job.join()
 
 # Post-process all of the PlanckUnit output files created to convert them to xunit style
-os.chdir(result_output_dir)
 planckserial_filename_regex = planck_serial.output_filename_syntax.replace('{target_name}', r'(?P<target_name>.*?)').replace('{suite_no}', r'(?P<suite_no>.*?)')
-for test_file in os.listdir('.'):
+for test_file in os.listdir(configuration.device_output_path):
 	match_obj = re.search(planckserial_filename_regex, test_file)
 	if not match_obj:
 		logger.error(test_file + ' did not conform to the expected output filename format')
@@ -107,10 +97,10 @@ for test_file in os.listdir('.'):
 
 	test_info = match_obj.groupdict()
 
-	xunit_outputfname = 'xunit_{target_name}_{suite_no}_output.txt'.format(**test_info)
+	xunit_outputfname = os.path.join(configuration.device_output_path, 'xunit_{target_name}_{suite_no}_output.txt').format(**test_info)
 
 	logger.info('Adapting {pl} -> {xl}...'.format(pl=test_file, xl=xunit_outputfname))
-	with open(test_file, 'r+') as planck_file, open(xunit_outputfname, 'w+') as xunit_file:
+	with open(os.path.join(configuration.device_output_path, test_file), 'r+') as planck_file, open(xunit_outputfname, 'w+') as xunit_file:
 		pxa.PlanckAdapter(test_info['target_name'], planck_file, xunit_file).adapt_planck_file()
 
 logger.info('Successfully completed test process.')
