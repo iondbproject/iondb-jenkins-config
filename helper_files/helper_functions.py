@@ -14,15 +14,15 @@ logger.addHandler(configuration.console_logger)
 
 def process_output_stream(process):
 	stdout = ''
-	while process.poll() is None:
-		if process.stdout is not None:
-			stdout_line = process.stdout.readline().strip()
+	for line in iter(process.stdout.readline, ''):
+		stdout_line = line.strip()
 
-			if stdout_line is not '':
-				logger.debug(stdout_line)
-				stdout += stdout_line + '\n'
+		logger.debug(stdout_line)
+		stdout += stdout_line + '\n'
 
-	process.wait(120)
+	if process.poll() is None:
+		logger.critical("Exit early")
+
 	return stdout
 
 
