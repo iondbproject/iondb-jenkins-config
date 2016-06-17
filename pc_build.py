@@ -20,15 +20,15 @@ proc = subprocess.Popen(['cmake', configuration.project_path], stdout=subprocess
 helper_functions.process_output_stream(proc)
 
 if proc.returncode != 0:
-	logger.error('PC build failed')
-	sys.exit(1)
+	logger.error('Generating Makefiles with CMake failed')
+	sys.exit(0)
 
 proc = subprocess.Popen(['make', 'all'], cwd=configuration.pc_build_path, stdout=subprocess.PIPE,
 						stderr=subprocess.STDOUT, universal_newlines=True)
 helper_functions.process_output_stream(proc)
 
 if proc.returncode != 0:
-	logger.error('Running tests failed')
-	sys.exit(1)
+	logger.error('Some or all tests failed')
+	sys.exit(0)
 
 logger.info('Build process finished')

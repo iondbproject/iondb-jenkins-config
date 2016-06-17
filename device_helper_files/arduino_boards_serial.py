@@ -21,7 +21,6 @@ target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 colorama.init()
 
 logger = logging.getLogger(__name__)
-logging.LogRecord
 logger.addHandler(configuration.device_logger)
 logger.addHandler(configuration.console_logger)
 

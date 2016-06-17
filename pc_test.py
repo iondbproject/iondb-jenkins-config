@@ -35,4 +35,4 @@ for abstest_path in glob.glob(os.path.join(configuration.pc_build_path, 'test_*'
 	with open(planck_outputfname, 'r+') as planck_file, open(xunit_outputfname, 'w+') as xunit_file:
 		pxa.PlanckAdapter(test_exec, planck_file, xunit_file).adapt_planck_file()
 
-logger.info('Successfully completed test process.')
+logger.info('Completed test process.')

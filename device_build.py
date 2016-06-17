@@ -183,7 +183,4 @@ if builds_failed:
 if no_compatible_devices:
 	logger.error('There are targets that cannot be ran because there is no suitable device connected.')
 
-if builds_failed or no_compatible_devices:
-	sys.exit(1)
-
 logger.info('Build process finished')
