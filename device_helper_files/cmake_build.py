@@ -27,7 +27,7 @@ class CMakeBuild:
 			os.makedirs(build_dir)
 		except OSError:
 			logger.exception('Failed to create build directory')
-			sys.exit(1)
+			return build_result(-1, '')
 
 		command = ['cmake', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port, '-DBAUD_RATE=' +
 				   str(configuration.baud_rate)]

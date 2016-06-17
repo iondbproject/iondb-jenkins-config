@@ -21,7 +21,6 @@ target_condition = namedtuple("target_condition", ["library", "cs_pin"])
 colorama.init()
 
 logger = logging.getLogger(__name__)
-logging.LogRecord
 logger.addHandler(configuration.device_logger)
 logger.addHandler(configuration.console_logger)
 
@@ -233,14 +232,14 @@ class ArduinoBoardsSerial:
 
 		compile_result = 0
 		if build_before:
-			compile_result = CMakeBuild.do_cmake_build(os.path.abspath('device_helper_files/test_sketch'), 'test_sketch/build', board_type, port, processor).status
+			compile_result = CMakeBuild.do_cmake_build(os.path.abspath('device_helper_files/test_sketch'), 'device_helper_files/test_sketch/build', board_type, port, processor).status
 
 		fast = False
 		if not build_before:
 			fast = True
 
-		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'test_sketch/build', fast).status
-		helper_functions.remove_directory('test_sketch/build')
+		upload_result = CMakeBuild.execute_make_target('test_sketch-upload', 'device_helper_files/test_sketch/build', fast).status
+		helper_functions.remove_directory('device_helper_files/test_sketch/build')
 
 		return compile_result == 0 and upload_result == 0
 
