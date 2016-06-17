@@ -35,6 +35,9 @@ device_logger = logging.FileHandler(os.path.join(device_output_path, device_log_
 device_logger.setLevel(logging.DEBUG)
 device_logger.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(threadName)s: %(message)s'))
 
+# How many empty strings do we need to see before we consider a subprocess to be terminated.
+empty_threshold = 10
+
 #==============================================
 # User configuration for Arduino build system
 #==============================================
