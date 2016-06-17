@@ -46,6 +46,9 @@ empty_threshold = 10
 # name of the port or a substring of the port name here. It is case insensitive.
 excluded_ports = ['bluetooth', 'wireless']
 
+# If you have device types that you wish to exclude from being found, add them here
+excluded_devices = ['leonardo']
+
 # Set this to True if you wish to specify build conditions that will be checked to exclude targets that will not
 # run on the device if the conditions are not met. For example, you may wish to see if there is an SD card in the
 # device and if it is formatted. You will add the appropriate keywords to test_sketch.ino and then add them here
