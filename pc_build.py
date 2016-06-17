@@ -15,7 +15,7 @@ logger.addHandler(configuration.console_logger)
 
 logger.info('Starting pc build')
 
-proc = subprocess.Popen(['cmake', configuration.project_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+proc = subprocess.Popen(['cmake', configuration.project_path, '-DCOVERAGE_TESTING=ON'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
 						universal_newlines=True)
 helper_functions.process_output_stream(proc)
 
