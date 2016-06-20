@@ -27,9 +27,10 @@ proc = subprocess.Popen(command, **arguments)
 helper_functions.process_output_stream(proc)
 
 # Build Doxygen
-command = ['doxygen', os.path.join(configuration.project_path, 'documentation/doxygen/iondb_template')]
+command = ['doxygen', 'iondb_template']
 with open(os.path.join(configuration.pc_output_path, 'doxygen.log'), 'w') as err:
-	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True)
+	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True,
+							cwd=os.path.join(configuration.project_path, 'documentation/doxygen'))
 	helper_functions.process_output_stream(proc)
 
 # Run Cppcheck
