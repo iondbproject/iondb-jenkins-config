@@ -12,13 +12,13 @@ logger.addHandler(configuration.pc_logger)
 logger.addHandler(configuration.console_logger)
 
 
-def process_output_stream(process):
+def process_output_stream(process, level=logging.DEBUG):
 	stdout = ''
 	while process.poll() is None:
 		stdout_line = process.stdout.readline().strip()
 
 		if stdout_line != '':
-			logger.debug(stdout_line)
+			logger.log(level, stdout_line)
 			stdout += stdout_line + '\n'
 
 	empty_count = 0
@@ -26,7 +26,7 @@ def process_output_stream(process):
 		stdout_line = process.stdout.readline().strip()
 
 		if stdout_line != '':
-			logger.debug(stdout_line)
+			logger.log(level, stdout_line)
 			stdout += stdout_line + '\n'
 		else:
 			empty_count += 1
