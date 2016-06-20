@@ -55,3 +55,16 @@ for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test
 			command	= ['drmemory', '-logdir', os.path.join(configuration.pc_output_path, 'drmemory'), '--', filename]
 			proc = subprocess.Popen(command, **arguments)
 			helper_functions.process_output_stream(proc, logging.INFO)
+
+# Run Massif
+executable = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test_*')):
+	if os.path.isfile(filename):
+		st = os.stat(filename)
+		mode = st.st_mode
+		if mode & executable:
+			command = ['valgrind', '--tool=massif', '--pages-as-heap=yes', '--stacks=yes', '--heap=yes',
+					   '--massif-out-file=' + os.path.join(configuration.pc_output_path,
+														   'massif-' + os.path.basename(filename))]
+			proc = subprocess.Popen(command, **arguments)
+			helper_functions.process_output_stream(proc, logging.INFO)
