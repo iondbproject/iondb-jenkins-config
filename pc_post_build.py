@@ -63,7 +63,7 @@ for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test
 		st = os.stat(filename)
 		mode = st.st_mode
 		if mode & executable:
-			command = ['valgrind', '--tool=massif', '--pages-as-heap=yes', '--stacks=yes', '--heap=yes',
+			command = ['valgrind', '--tool=massif', '--stacks=yes', '--heap=yes',
 					   '--massif-out-file=' + os.path.join(configuration.pc_output_path, 'massif-' + os.path.basename(filename)),
 					   filename]
 			proc = subprocess.Popen(command, **arguments)
