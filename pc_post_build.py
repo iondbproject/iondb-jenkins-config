@@ -28,15 +28,15 @@ helper_functions.process_output_stream(proc)
 
 # Build Doxygen
 command = ['doxygen', os.path.join(configuration.project_path, 'documentation/doxygen/iondb_template')]
-with open(os.path.join(configuration.pc_output_path, 'doxygen.log'), 'wb') as err:
-	subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err)
+with open(os.path.join(configuration.pc_output_path, 'doxygen.log'), 'w') as err:
+	subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True)
 	helper_functions.process_output_stream(proc)
 
 # Run Cppcheck
 command = ['cppcheck', '--enable=all', '--inconclusive', '--xml', '--xml-version=2',
 		   os.path.join(configuration.project_path, 'src')]
-with open(os.path.join(configuration.pc_output_path, 'cppcheck.xml'), 'wb') as err:
-	subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err)
+with open(os.path.join(configuration.pc_output_path, 'cppcheck.xml'), 'w') as err:
+	subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True)
 	helper_functions.process_output_stream(proc)
 
 # Run Dr. Memory
