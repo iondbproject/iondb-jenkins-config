@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
+import argparse
 
 import configuration
 
@@ -12,11 +13,15 @@ import helper_functions
 logger = logging.getLogger(__name__)
 logger.addHandler(configuration.console_logger)
 
+parser = argparse.ArgumentParser()
+parser.add_argument("branch", nargs="?", default="development", help="Branch target to clone.")
+p_args = parser.parse_args()
+
 #--------------
 # Clone IonDB
 #--------------
 
-logger.info('Cloning IonDB')
+logger.info('Cloning IonDB, targeting branch ' + p_args.branch)
 
 try:
 	shutil.rmtree('iondb/')
@@ -26,19 +31,13 @@ except OSError:
 arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
 
 proc = subprocess.Popen(['git', 'clone', '--depth=1', 'https://github.com/iondbproject/iondb.git', 'iondb',
-						 '--recursive', '-b', 'coverage_planck-close'], **arguments)
+						 '--recursive', '-b', p_args.branch], **arguments)
 helper_functions.process_output_stream(proc)
 if proc.returncode != 0:
 	logger.error('Failed to clone IonDB repository')
 	sys.exit(1)
 
-proc = subprocess.Popen(['git', 'submodule', 'init'], **arguments)
-helper_functions.process_output_stream(proc)
-if proc.returncode != 0:
-	logger.error('Failed to initialize submodule')
-	sys.exit(1)
-
-proc = subprocess.Popen(['git', 'submodule', 'update', '--remote'], **arguments)
+proc = subprocess.Popen(['git', 'submodule', 'update', '--init', '--remote'], **arguments)
 helper_functions.process_output_stream(proc)
 if proc.returncode != 0:
 	logger.error('Failed to initialize submodule')
