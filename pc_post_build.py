@@ -3,13 +3,18 @@ import stat
 import subprocess
 import glob
 import sys
+import logging
 
 import configuration
 
 sys.path.append('helper_files/')
 import helper_functions
 
-arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT}
+logger = logging.getLogger(__name__)
+logger.addHandler(configuration.pc_logger)
+logger.addHandler(configuration.console_logger)
+
+arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
 
 # Convert coverage information
 command = ['gcovr', '--branches', '--xml', '-o', os.path.join(configuration.pc_output_path, 'gcovr.xml')]
