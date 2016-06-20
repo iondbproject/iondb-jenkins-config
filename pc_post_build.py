@@ -27,7 +27,7 @@ proc = subprocess.Popen(command, **arguments)
 helper_functions.process_output_stream(proc)
 
 # Build Doxygen
-print(os.path.join(configuration.project_path, '/documentation/doxygen/iondb_template'))
+logger.info(os.path.join(configuration.project_path, '/documentation/doxygen/iondb_template'))
 command = ['doxygen', os.path.join(configuration.project_path, '/documentation/doxygen/iondb_template'), '2>',
 		   os.path.join(configuration.pc_output_path, 'doxygen.log')]
 proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, universal_newlines=True)
