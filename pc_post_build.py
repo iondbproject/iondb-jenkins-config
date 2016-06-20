@@ -29,8 +29,9 @@ helper_functions.process_output_stream(proc)
 # Build Doxygen
 command = ['doxygen', os.path.join(configuration.project_path, 'documentation/doxygen/iondb_template')]
 with open(os.path.join(configuration.pc_output_path, 'doxygen.log'), 'w') as err:
-	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True)
-	helper_functions.process_output_stream(proc)
+	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+	print(proc.communicate())
+	# helper_functions.process_output_stream(proc)
 
 # Run Cppcheck
 command = ['cppcheck', '--enable=all', '--inconclusive', '--xml', '--xml-version=2',
