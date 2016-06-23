@@ -29,8 +29,8 @@ class CMakeBuild:
 			logger.exception('Failed to create build directory')
 			return build_result(-1, '')
 
-		command = ['cmake', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port, '-DBAUD_RATE=' +
-				   str(configuration.baud_rate)]
+		command = ['cmake', '-DJENKINS_BUILD=TRUE', '-DUSE_ARDUINO=TRUE', '-DBOARD=' + board_type, '-DPORT=' + port,
+				   '-DBAUD_RATE=' + str(configuration.baud_rate)]
 
 		if target_conditions is not None:
 			for target_condition in target_conditions:
