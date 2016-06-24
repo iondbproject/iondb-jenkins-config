@@ -75,6 +75,7 @@ Thumbs.db
 *.dSYM/
 
 #Python scrap
+*.pyc
 __pycache__/
 
 #Output scrap
