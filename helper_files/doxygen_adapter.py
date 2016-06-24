@@ -3,7 +3,7 @@ import re
 import sys
 import functools
 
-graph_re = re.compile(r'(\w+_GRAPH\s*=).*')
+graph_re = re.compile(r'(HAVE_DOT\s+=).*')
 
 def doxy_adapt(filein, fileout=sys.stdout):
     doxy_print = functools.partial(print, file=fileout)
@@ -13,7 +13,7 @@ def doxy_adapt(filein, fileout=sys.stdout):
         if not line.startswith('#'):
             graph_obj = graph_re.match(line)
             if graph_obj:
-                doxy_print(graph_obj.group(1))
+                doxy_print(graph_obj.group(1),'NO')
                 continue
 
             doxy_print(line)
