@@ -17,7 +17,7 @@ logger.addHandler(configuration.pc_logger)
 logger.addHandler(configuration.console_logger)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--rapid", metavar="", action='store_true',
+parser.add_argument("-r", "--rapid", action='store_true',
                     help="Whether or not to do a rapid build. (Disables many slow profilers)")
 p_args = parser.parse_args()
 
