@@ -50,7 +50,7 @@ with open(os.path.join(configuration.pc_output_path, 'doxygen.log'), 'w') as err
 	helper_functions.process_output_stream(proc, logging.INFO)
 
 # Run Cppcheck
-command = ['cppcheck', '--enable=all', '--inconclusive', '--xml', '--xml-version=2',
+command = ['cppcheck', '-j', '2', '--enable=all', '--inconclusive', '--xml', '--xml-version=2',
 		   os.path.join(configuration.project_path, 'src')]
 with open(os.path.join(configuration.pc_output_path, 'cppcheck.xml'), 'w') as err:
 	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True)
