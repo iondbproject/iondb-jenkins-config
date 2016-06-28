@@ -24,7 +24,7 @@ device_log_name = 'device_logger.log'
 logging.getLogger().setLevel(logging.DEBUG)
 
 console_logger = logging.StreamHandler(sys.stdout)
-console_logger.setLevel(logging.INFO)
+console_logger.setLevel(logging.WARNING)
 console_logger.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
 
 pc_logger = logging.FileHandler(os.path.join(pc_output_path, pc_log_name))
