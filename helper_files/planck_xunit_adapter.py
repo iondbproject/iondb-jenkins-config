@@ -42,13 +42,17 @@ class PlanckAdapter:
 		self.pxa_print('</{tag}>'.format(tag=tag_name))
 
 	def adapt_planck_file(self):
-		test_case_re = re.compile(r'<test>line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",message:\"(?P<message>.*?)\"<\/test>')
+		test_case_re = re.compile(r'<test>line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",time:\"(?P<time>.*?)\",message:\"(?P<message>.*?)\"<\/test>')
 		summary_re = re.compile(r'<summary>total_tests:\"(?P<total_tests>.*?)\",total_passed:\"(?P<total_passed>.*?)\"<\/summary>')
 		error_re = re.compile(r'<planck_serial_error>(?P<error_msg>.*?)<\/planck_serial_error>')
+		testname_re = re.compile(r'<testname>(.*)<\/testname>')
+		testcount_re = re.compile(r'<testcount>(.*)<\/testcount>')
 
 		test_cases = []
+		test_names = []
 		summary = {}
 		error_msg = ''
+		expected_test_count = 0
 		for line in self.target_file:
 			line = ''.join(c for c in line if c in string.printable)
 
@@ -64,8 +68,16 @@ class PlanckAdapter:
 			if error_obj:
 				error_msg = error_obj.group(1)
 
-		summary['total_failed'] = int(summary.get('total_tests', 0)) - int(summary.get('total_passed', 0))
+			testname_obj = testname_re.search(line)
+			if testname_obj:
+				test_names.append(testname_obj.group(1))
 
+			testcount_obj = testcount_re.search(line)
+			if testcount_obj:
+				expected_test_count = int(testcount_obj.group(1))
+
+		summary['total_failed'] = expected_test_count - int(summary.get('total_passed', 0))
+									# int(summary.get('total_tests', 0))
 		runattrs = {
 			'name': self.suite_name,
 			'project': 'IonDB',
@@ -78,7 +90,7 @@ class PlanckAdapter:
 
 		self.write_xml_header()
 		with self.write_xunit_tag('testrun', runattrs):
-			with self.write_xunit_tag('testsuite', {'name': self.suite_name, 'time': '0.0'}):
+			with self.write_xunit_tag('testsuite', {'name': self.suite_name, 'time': sum([float(case['time']) for case in test_cases])}):
 				# If PlanckSerial reported an error, then we want to write a special 'testcase' for this error.
 				if error_msg:
 					error_attrs = {
@@ -91,11 +103,11 @@ class PlanckAdapter:
 						with self.write_xunit_tag('failure'):
 							self.pxa_print(error_msg)
 
-				for case in test_cases:
+				for case, case_name in zip(test_cases, test_names):
 					case_attrs = {
-						'name': '{funcname}'.format(funcname=case['function']),
+						'name': '{funcname}'.format(funcname=case_name),
 						'classname': self.suite_name,
-						'time': '0.0',
+						'time': case['time'],
 					}
 
 					with self.write_xunit_tag('testcase', case_attrs):
@@ -103,12 +115,20 @@ class PlanckAdapter:
 							with self.write_xunit_tag('failure'):
 								self.pxa_print(
 									'Failed in function "{func}", at {filen}:{line}: {msg}'.format(
-										func=case['function'],
+										func=case_name,
 										filen=case['file'],
 										line=case['line'],
 										msg=case['message']
 									)
 								)
+
+								if case_name != case['function']:
+									self.pxa_print(
+						            	'Additionally, we expected to get "{real_name}" for this function name but instead we got "{func_name}"'.format(
+						            		real_name=case_name,
+						            		func_name=case['function']
+						            	)
+						            )                                                                                                       
 
 
 if __name__ == '__main__':
