@@ -7,12 +7,12 @@ import functools
 from contextlib import contextmanager
 
 sys.path.append('../')
-# import configuration
+import configuration
 
-# logger = logging.getLogger(__name__)
-# logger.addHandler(configuration.device_logger)
-# logger.addHandler(configuration.pc_logger)
-# logger.addHandler(configuration.console_logger)
+logger = logging.getLogger(__name__)
+logger.addHandler(configuration.device_logger)
+logger.addHandler(configuration.pc_logger)
+logger.addHandler(configuration.console_logger)
 
 
 # Outputs PlanckUnit test results in JUnit XML spec.
