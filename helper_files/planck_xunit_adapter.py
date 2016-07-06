@@ -59,7 +59,7 @@ class PlanckAdapter:
 			match_obj = test_case_re.search(line)
 			if match_obj:
 				case_dict = match_obj.groupdict()
-				case_dict['time'] = case_dict['time'] / 1000 # Convert millis to seconds
+				case_dict['time'] = float(case_dict['time']) / 1000 # Convert millis to seconds
 				test_cases[case_dict['name']] = case_dict
 
 			summ_obj = summary_re.search(line)
