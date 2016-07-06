@@ -12,8 +12,8 @@ logger.addHandler(configuration.device_logger)
 logger.addHandler(configuration.console_logger)
 
 # Global variables.
-opening_tag = "<suite>"
-closing_tag = "</suite>"
+opening_tag = "<planckmeta>" # This is the first thing we expect to see
+closing_tag = "</suite>" # This is the last thing we expect to see
 
 error_open_tag = "<planck_serial_error>"
 error_close_tag = "</planck_serial_error>"
@@ -67,17 +67,17 @@ def output_test(ser, suite_no, output_folder, target_name):
 	linein = ""
 	#This try is caught by PlanckAbortError.
 	try:
-		# This try is caught by UnicdeDecodeError.
+		# This try is caught by UnicodeDecodeError.
 		try:
 			linein = ser.readline()
-			# Consume garbage until we see the first <suite> tag
-			while b'<suite>' not in linein and linein != b'':
+			# Consume garbage until we see the first <planckmeta> tag
+			while b'<planckmeta>' not in linein and linein != b'':
 				logger.warning('Threw away: ')
 				logger.warning(linein)
 				linein = ser.readline()
 
 			if linein != b'':
-				linein = opening_tag + linein.rsplit(b'<suite>', 1)[1].decode('ascii')
+				linein = opening_tag + linein.rsplit(b'<planckmeta>', 1)[1].decode('ascii')
 			else:
 				linein = ''
 
