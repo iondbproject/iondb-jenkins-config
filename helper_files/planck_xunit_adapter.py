@@ -7,12 +7,12 @@ import functools
 from contextlib import contextmanager
 
 sys.path.append('../')
-import configuration
+# import configuration
 
-logger = logging.getLogger(__name__)
-logger.addHandler(configuration.device_logger)
-logger.addHandler(configuration.pc_logger)
-logger.addHandler(configuration.console_logger)
+# logger = logging.getLogger(__name__)
+# logger.addHandler(configuration.device_logger)
+# logger.addHandler(configuration.pc_logger)
+# logger.addHandler(configuration.console_logger)
 
 
 # Outputs PlanckUnit test results in JUnit XML spec.
@@ -42,13 +42,13 @@ class PlanckAdapter:
 		self.pxa_print('</{tag}>'.format(tag=tag_name))
 
 	def adapt_planck_file(self):
-		test_case_re = re.compile(r'<test>line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",time:\"(?P<time>.*?)\",message:\"(?P<message>.*?)\"<\/test>')
+		test_case_re = re.compile(r'<test>name:\"(?P<name>.*?)\",line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",time:\"(?P<time>.*?)\",message:\"(?P<message>.*?)\"<\/test>')
 		summary_re = re.compile(r'<summary>total_tests:\"(?P<total_tests>.*?)\",total_passed:\"(?P<total_passed>.*?)\"<\/summary>')
 		error_re = re.compile(r'<planck_serial_error>(?P<error_msg>.*?)<\/planck_serial_error>')
 		testname_re = re.compile(r'<testname>(.*)<\/testname>')
 		testcount_re = re.compile(r'<testcount>(.*)<\/testcount>')
 
-		test_cases = []
+		test_cases = {}
 		test_names = []
 		summary = {}
 		error_msg = ''
@@ -58,11 +58,16 @@ class PlanckAdapter:
 
 			match_obj = test_case_re.search(line)
 			if match_obj:
-				test_cases.append(match_obj.groupdict())
+				case_dict = match_obj.groupdict()
+				test_cases[case_dict['name']] = case_dict
 
 			summ_obj = summary_re.search(line)
 			if summ_obj:
-				summary = summ_obj.groupdict()
+				if summary:
+					for k,v in summ_obj.groupdict().items():
+						summary[k] += int(v)
+				else:
+					summary = {k:int(v) for k,v in summ_obj.groupdict().items()}
 
 			error_obj = error_re.search(line)
 			if error_obj:
@@ -74,14 +79,14 @@ class PlanckAdapter:
 
 			testcount_obj = testcount_re.search(line)
 			if testcount_obj:
-				expected_test_count = int(testcount_obj.group(1))
+				expected_test_count += int(testcount_obj.group(1))
 
-		summary['total_failed'] = expected_test_count - int(summary.get('total_passed', 0))
+		summary['total_failed'] = len(test_names) - len(test_cases)
 									# int(summary.get('total_tests', 0))
 		runattrs = {
 			'name': self.suite_name,
 			'project': 'IonDB',
-			'tests': len(test_cases),
+			'tests': len(test_names),
 			'started': len(test_cases),
 			'failures': summary.get('total_failed', 0),
 			'errors': 0,
@@ -90,7 +95,7 @@ class PlanckAdapter:
 
 		self.write_xml_header()
 		with self.write_xunit_tag('testrun', runattrs):
-			with self.write_xunit_tag('testsuite', {'name': self.suite_name, 'time': sum([float(case['time']) for case in test_cases])}):
+			with self.write_xunit_tag('testsuite', {'name': self.suite_name, 'time': sum([float(case['time']) for case in test_cases.values()])}):
 				# If PlanckSerial reported an error, then we want to write a special 'testcase' for this error.
 				if error_msg:
 					error_attrs = {
@@ -103,33 +108,30 @@ class PlanckAdapter:
 						with self.write_xunit_tag('failure'):
 							self.pxa_print(error_msg)
 
-				for case, case_name in zip(test_cases, test_names):
+				for case_name in test_names:
+					case = test_cases.get(case_name, {})
 					case_attrs = {
-						'name': '{funcname}'.format(funcname=case_name),
+						'name': '{base_name}'.format(base_name=case_name),
 						'classname': self.suite_name,
-						'time': case['time'],
+						'time': case.get('time', '0.0'),
 					}
 
 					with self.write_xunit_tag('testcase', case_attrs):
+						if not case:
+							with self.write_xunit_tag('failure'):
+								self.pxa_print('We expected this test to run, but it was not.')
+							continue
+
 						if case['line'] != '-1': #if fail
 							with self.write_xunit_tag('failure'):
 								self.pxa_print(
 									'Failed in function "{func}", at {filen}:{line}: {msg}'.format(
-										func=case_name,
+										func=case['function'],
 										filen=case['file'],
 										line=case['line'],
 										msg=case['message']
 									)
-								)
-
-								if case_name != case['function']:
-									self.pxa_print(
-						            	'Additionally, we expected to get "{real_name}" for this function name but instead we got "{func_name}"'.format(
-						            		real_name=case_name,
-						            		func_name=case['function']
-						            	)
-						            )                                                                                                       
-
+								)                                           
 
 if __name__ == '__main__':
 	import fileinput
