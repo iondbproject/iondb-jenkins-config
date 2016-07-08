@@ -31,7 +31,7 @@ def upload_and_read_serial(target_name, arduino_build, output_dir):
 	CMakeBuild.execute_make_target(target_name, os.path.join(configuration.device_build_path, arduino_build[0].dir),
 								   False)
 	planck_serial.parse_serial(output_dir, arduino_build[0].arduino.port, baud_rate=configuration.baud_rate,
-							   target_name=target_name)
+							   target_name=target_name, timeout=configuration.timeout)
 	logger.info('Finished running ' + target_name)
 	arduino_build[1] = True
 

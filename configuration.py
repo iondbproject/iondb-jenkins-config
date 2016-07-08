@@ -71,4 +71,4 @@ max_dynamic_memory_percentage = 80
 baud_rate = 115200
 
 # The timeout when reading lines from the serial output
-timeout = 20
+timeout = 300

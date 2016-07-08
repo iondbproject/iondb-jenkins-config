@@ -94,12 +94,10 @@ def output_test(ser, suite_no, output_folder, target_name):
 						#   just include the tag and newline.)
 						in_suite = True
 						lines.append(linein[:len(opening_tag) + 1])
-						logger.info(linein[:len(opening_tag) + 1])
 
 				# If we find a closing tag and are in a suite (i.e. not catching old data), write the contents.
 				elif closing_tag in linein and in_suite:
 					lines.append(linein)
-					logger.info(linein)
 
 					flush_to_file(filename, lines)
 
@@ -111,9 +109,9 @@ def output_test(ser, suite_no, output_folder, target_name):
 				# otherwise they are test data and should be added as-is.
 				elif in_suite:
 					lines.append(linein)
-					logger.info(linein)
 
 				linein = ser.readline()
+				logger.info(linein)
 				linein = linein.decode("ascii")
 
 			# Land here on timeout (from crash, or end of data).
