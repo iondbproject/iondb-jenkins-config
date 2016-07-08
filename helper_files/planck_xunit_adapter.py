@@ -84,55 +84,53 @@ class PlanckAdapter:
 
 		summary['total_failed'] = len(test_names) - len(test_cases)
 									# int(summary.get('total_tests', 0))
-		runattrs = {
+		suiteattrs = {
 			'name': self.suite_name,
-			'project': 'IonDB',
 			'tests': len(test_names),
 			'started': len(test_cases),
 			'failures': summary.get('total_failed', 0),
 			'errors': 0,
-			'ignored': 0,
+			'time': sum([case['time'] for case in test_cases.values()]),
 		}
 
 		self.write_xml_header()
-		with self.write_xunit_tag('testrun', runattrs):
-			with self.write_xunit_tag('testsuite', {'name': self.suite_name, 'time': sum([case['time'] for case in test_cases.values()])}):
-				# If PlanckSerial reported an error, then we want to write a special 'testcase' for this error.
-				if error_msg:
-					error_attrs = {
-						'name': '_planck_error',
-						'classname': self.suite_name,
-						'time': '0.0',
-					}
+		with self.write_xunit_tag('testsuite', suiteattrs):
+			# If PlanckSerial reported an error, then we want to write a special 'testcase' for this error.
+			if error_msg:
+				error_attrs = {
+					'name': '_planck_error',
+					'classname': self.suite_name,
+					'time': '0.0',
+				}
 
-					with self.write_xunit_tag('testcase', error_attrs):
+				with self.write_xunit_tag('testcase', error_attrs):
+					with self.write_xunit_tag('failure'):
+						self.pxa_print(error_msg)
+
+			for case_name in test_names:
+				case = test_cases.get(case_name, {})
+				case_attrs = {
+					'name': '{base_name}'.format(base_name=case_name),
+					'classname': self.suite_name,
+					'time': case.get('time', '0.0'),
+				}
+
+				with self.write_xunit_tag('testcase', case_attrs):
+					if not case:
 						with self.write_xunit_tag('failure'):
-							self.pxa_print(error_msg)
+							self.pxa_print('We expected this test to run, but it was not.')
+						continue
 
-				for case_name in test_names:
-					case = test_cases.get(case_name, {})
-					case_attrs = {
-						'name': '{base_name}'.format(base_name=case_name),
-						'classname': self.suite_name,
-						'time': case.get('time', '0.0'),
-					}
-
-					with self.write_xunit_tag('testcase', case_attrs):
-						if not case:
-							with self.write_xunit_tag('failure'):
-								self.pxa_print('We expected this test to run, but it was not.')
-							continue
-
-						if case['line'] != '-1': #if fail
-							with self.write_xunit_tag('failure'):
-								self.pxa_print(
-									'Failed in function "{func}", at {filen}:{line}: {msg}'.format(
-										func=case['function'],
-										filen=case['file'],
-										line=case['line'],
-										msg=case['message']
-									)
-								)                                           
+					if case['line'] != '-1': #if fail
+						with self.write_xunit_tag('failure'):
+							self.pxa_print(
+								'Failed in function "{func}", at {filen}:{line}: {msg}'.format(
+									func=case['function'],
+									filen=case['file'],
+									line=case['line'],
+									msg=case['message']
+								)
+							)                                           
 
 if __name__ == '__main__':
 	import fileinput
