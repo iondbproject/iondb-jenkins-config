@@ -83,11 +83,10 @@ class PlanckAdapter:
 				expected_test_count += int(testcount_obj.group(1))
 
 		summary['total_failed'] = len(test_names) - len(test_cases)
-									# int(summary.get('total_tests', 0))
+
 		suiteattrs = {
 			'name': self.suite_name,
 			'tests': len(test_names),
-			'started': len(test_cases),
 			'failures': summary.get('total_failed', 0),
 			'errors': 0,
 			'time': sum([case['time'] for case in test_cases.values()]),
