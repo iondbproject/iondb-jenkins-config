@@ -70,5 +70,5 @@ max_dynamic_memory_percentage = 80
 # The baud rate used by the serial monitor
 baud_rate = 115200
 
-# The timeout when reading lines from the serial output
-timeout = 300
+# How long (in seconds) do we wait before aborting a serial line read?
+timeout = 30
