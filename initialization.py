@@ -26,7 +26,7 @@ logger.info('Cloning IonTable, targeting branch ' + p_args.branch)
 try:
 	shutil.rmtree('iontable/')
 except OSError:
-	logger.warning('Failed to remove IonDB project folder. It may not have existed.')
+	logger.warning('Failed to remove IonTable project folder. It may not have existed.')
 
 arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
 
@@ -57,4 +57,4 @@ try:
 except OSError:
 	logger.warning('Failed to create device output directory. It probably already exits.')
 
-logger.info('Successfully cloned IonDB')
+logger.info('Successfully cloned IonTable')

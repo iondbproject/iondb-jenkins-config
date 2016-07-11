@@ -34,8 +34,8 @@ proc = subprocess.Popen(command, **arguments)
 helper_functions.process_output_stream(proc, logging.INFO)
 
 # Build Doxygen
-iondb_doxy_path = os.path.join(configuration.project_path,'documentation/doxygen/iondb_template')
-command = ['doxygen', 'iondb_template']
+iondb_doxy_path = os.path.join(configuration.project_path,'documentation/doxygen/iontable_template')
+command = ['doxygen', 'iontable_template']
 if p_args.rapid:
 	# If we're a rapid build, we skip all graph generation
 	rapid_doxy_path = os.path.join(configuration.project_path,'documentation/doxygen/rapid_template')
@@ -51,7 +51,7 @@ with open(os.path.join(configuration.pc_output_path, 'doxygen.log'), 'w') as err
 
 # Run Cppcheck
 command = ['cppcheck', '-j', '2', '--enable=all', '--inconclusive', '--xml', '--xml-version=2',
-		   os.path.join(configuration.project_path, 'src')]
+		   os.path.join(configuration.project_path, 'src'), '-i' + os.path.join(configuration.project_path, 'src', 'iondb')]
 with open(os.path.join(configuration.pc_output_path, 'cppcheck.xml'), 'w') as err:
 	proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=err, universal_newlines=True)
 	helper_functions.process_output_stream(proc, logging.INFO)
