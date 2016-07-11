@@ -21,20 +21,20 @@ p_args = parser.parse_args()
 # Clone IonDB
 #--------------
 
-logger.info('Cloning IonDB, targeting branch ' + p_args.branch)
+logger.info('Cloning IonTable, targeting branch ' + p_args.branch)
 
 try:
-	shutil.rmtree('iondb/')
+	shutil.rmtree('iontable/')
 except OSError:
 	logger.warning('Failed to remove IonDB project folder. It may not have existed.')
 
 arguments = {'stdout': subprocess.PIPE, 'stderr': subprocess.STDOUT, 'universal_newlines': True}
 
-proc = subprocess.Popen(['git', 'clone', '--depth=1', 'https://github.com/iondbproject/iondb.git', 'iondb',
+proc = subprocess.Popen(['git', 'clone', '--depth=1', 'https://github.com/iondbproject/iontable.git', 'iontable',
 						 '--recursive', '-b', p_args.branch], **arguments)
 helper_functions.process_output_stream(proc)
 if proc.returncode != 0:
-	logger.error('Failed to clone IonDB repository')
+	logger.error('Failed to clone IonTable repository')
 	sys.exit(1)
 
 proc = subprocess.Popen(['git', 'submodule', 'update', '--init', '--remote'], **arguments)

@@ -7,7 +7,7 @@ import logging
 #=============================
 
 # This path is the ABSOLUTE path of the project.
-project_path = os.path.abspath('iondb/')
+project_path = os.path.abspath('iontable/')
 
 # Build and log output folders. This is the path where the board definitions and corresponding targets will be saved as
 # well as the logs and builds.
