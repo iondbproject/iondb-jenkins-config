@@ -72,8 +72,8 @@ for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test
 			proc = subprocess.Popen(command, **arguments)
 			helper_functions.process_output_stream(proc, logging.INFO)
 
-# Run Massif
-if p_args.rapid: 
+# Run Massif - Only do when not rapid build
+if not p_args.rapid: 
     try:
             os.mkdir(os.path.join(configuration.pc_output_path, 'massif'))
     except OSError:
