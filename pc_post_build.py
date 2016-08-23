@@ -73,19 +73,20 @@ for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test
 			helper_functions.process_output_stream(proc, logging.INFO)
 
 # Run Massif
-try:
-	os.mkdir(os.path.join(configuration.pc_output_path, 'massif'))
-except OSError:
-	logger.exception()
+if p_args.rapid: 
+    try:
+            os.mkdir(os.path.join(configuration.pc_output_path, 'massif'))
+    except OSError:
+            logger.exception()
 
-executable = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
-for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test_*')):
-	if os.path.isfile(filename):
-		st = os.stat(filename)
-		mode = st.st_mode
-		if mode & executable:
-			command = ['valgrind', '--tool=massif', '--stacks=yes', '--heap=yes',
-					   '--massif-out-file=' + os.path.join(configuration.pc_output_path, 'massif', os.path.basename(filename)),
-					   filename]
-			proc = subprocess.Popen(command, **arguments)
-			helper_functions.process_output_stream(proc, logging.INFO)
+    executable = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+    for filename in glob.glob(os.path.join(configuration.pc_build_path, 'bin', 'test_*')):
+            if os.path.isfile(filename):
+                    st = os.stat(filename)
+                    mode = st.st_mode
+                    if mode & executable:
+                            command = ['valgrind', '--tool=massif', '--stacks=yes', '--heap=yes',
+                                               '--massif-out-file=' + os.path.join(configuration.pc_output_path, 'massif', os.path.basename(filename)),
+                                               filename]
+                            proc = subprocess.Popen(command, **arguments)
+                            helper_functions.process_output_stream(proc, logging.INFO)
