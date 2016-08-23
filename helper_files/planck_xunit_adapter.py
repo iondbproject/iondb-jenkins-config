@@ -42,7 +42,7 @@ class PlanckAdapter:
 		self.pxa_print('</{tag}>'.format(tag=tag_name))
 
 	def adapt_planck_file(self):
-		test_case_re = re.compile(r'<test>name:\"(?P<name>.*?)\",line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",function:\"(?P<function>.*?)\",time:\"(?P<time>.*?)\",message:\"(?P<message>.*?)\"<\/test>')
+		test_case_re = re.compile(r'<test>name:\"(?P<name>.*?)\",line:\"(?P<line>.*?)\",file:\"(?P<file>.*?)\",time:\"(?P<time>.*?)\",message:\"(?P<message>.*?)\"<\/test>')
 		summary_re = re.compile(r'<summary>total_tests:\"(?P<total_tests>.*?)\",total_passed:\"(?P<total_passed>.*?)\"<\/summary>')
 		error_re = re.compile(r'<planck_serial_error>(?P<error_msg>.*?)<\/planck_serial_error>')
 		testname_re = re.compile(r'<testname>(.*)<\/testname>')
@@ -124,7 +124,7 @@ class PlanckAdapter:
 						with self.write_xunit_tag('failure'):
 							self.pxa_print(
 								'Failed in function "{func}", at {filen}:{line}: {msg}'.format(
-									func=case['function'],
+									func=case['name'],
 									filen=case['file'],
 									line=case['line'],
 									msg=case['message']
