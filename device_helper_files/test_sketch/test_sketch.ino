@@ -38,7 +38,7 @@ check_chip_select_conditions(
 		if (SD.begin(cs_pin)) {
 			Serial.print(" FORMATTED_SD_CARD");
 			// Wipe the SD card so we start from a blank slate
-			root = SD.open("/");
+			File root = SD.open("/");
 			while(true) {
 				File entry = root.openNextFile();
 				if(!entry) {
