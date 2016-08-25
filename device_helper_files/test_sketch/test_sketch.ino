@@ -37,6 +37,16 @@ check_chip_select_conditions(
 	if (card.init(SPI_HALF_SPEED, cs_pin)) {
 		if (SD.begin(cs_pin)) {
 			Serial.print(" FORMATTED_SD_CARD");
+			// Wipe the SD card so we start from a blank slate
+			root = SD.open("/");
+			while(true) {
+				File entry = root.openNextFile();
+				if(!entry) {
+					break;
+				}
+				entry.close();
+				SD.remove(entry.name());
+			}
 		}
 
 		return 1;
